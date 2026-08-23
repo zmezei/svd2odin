@@ -7,7 +7,7 @@
         },
         {
             "name": "stm32f0",
-            "path": ".ols/stm32f0"
+            "path": ".ols"
         }
     ],
     "enable_semantic_tokens": true,

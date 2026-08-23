@@ -7,14 +7,14 @@
 // Build:
 //   odin build main.odin -file -out:blinky.elf \
 //     -target:freestanding_arm32_none_eabi -no-crt -no-thread-local \
-//     -default-to-nil-allocator -vet
+//     -default-to-nil-allocator -collection:stm32f0=../.. -vet
 //   arm-none-eabi-objcopy -O binary blinky.elf blinky.bin
 //   st-flash write blinky.bin 0x08000000
 // ──────────────────────────────────────────────────────────────────────
 
 package main
 
-import "stm32f0"
+import "stm32f0:stm32f0"
 
 SYSTEM_CLOCK_HZ :: 48_000_000
 LED_PIN :: 13  // PC13 on Bluepill

@@ -22,6 +22,7 @@ ROOT        := $(CURDIR)
 GENERATED   := $(ROOT)/generated
 HAL_DIR     := $(ROOT)/hal/stm32f0
 CORE_DIR    := $(ROOT)/core
+OLS_DIR     := $(ROOT)/.ols/stm32f0
 STARTUP     := $(CORE_DIR)/startup/startup_stm32f051.s
 LINKER      := $(CORE_DIR)/linker/stm32f051.ld
 SVD_FILE    := $(ROOT)/svd/stm32f051.svd
@@ -30,7 +31,7 @@ SVD_GEN     := $(GENERATED)/stm32f0.odin
 # ── Odin compiler flags ──
 ODIN_TARGET := -target:freestanding_arm32_none_eabi
 ODIN_FLAGS  := -file -no-crt -no-thread-local -default-to-nil-allocator -vet \
-               -collection:stm32f0=$(HAL_DIR):$(GENERATED):$(CORE_DIR)
+               -collection:stm32f0=$(ROOT)/.ols
 
 # ── Build directory ──
 BUILD_DIR   := build
@@ -41,6 +42,19 @@ EXAMPLES := blinky uart_echo
 .PHONY: all clean generate flash-blinky flash-uart-echo $(EXAMPLES)
 
 all: $(EXAMPLES)
+
+# ── Set up OLS symlink directory ──
+# Combines stm32f0 package files from generated/, hal/stm32f0/, and core/
+# into a single directory for OLS (which doesn't support multi-path collections).
+$(OLS_DIR):
+	@mkdir -p $(OLS_DIR)
+	@ln -sf ../../generated/stm32f0.odin $(OLS_DIR)/stm32f0.odin
+	@ln -sf ../../hal/stm32f0/usart.odin $(OLS_DIR)/usart.odin
+	@ln -sf ../../hal/stm32f0/gpio.odin $(OLS_DIR)/gpio.odin
+	@ln -sf ../../hal/stm32f0/rcc.odin $(OLS_DIR)/rcc.odin
+	@ln -sf ../../hal/stm32f0/timer.odin $(OLS_DIR)/timer.odin
+	@ln -sf ../../core/cortex_m0.odin $(OLS_DIR)/cortex_m0.odin
+	@echo "Created OLS symlink directory"
 
 # ── Generate register definitions from SVD ──
 generate: $(SVD_GEN)
@@ -54,7 +68,7 @@ blinky: $(BUILD_DIR)/blinky.bin
 
 uart_echo: $(BUILD_DIR)/uart_echo.bin
 
-$(BUILD_DIR)/%.elf: examples/%/main.odin $(SVD_GEN) $(STARTUP)
+$(BUILD_DIR)/%.elf: examples/%/main.odin $(SVD_GEN) $(STARTUP) $(OLS_DIR)
 	@mkdir -p $(BUILD_DIR)
 	@echo "Building $*..."
 	# Compile startup assembly
