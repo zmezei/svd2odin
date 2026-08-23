@@ -13,6 +13,7 @@ build/
 # IDE files
 .vscode/
 .idea/
+.ols/
 *.swp
 *.swo
 *~

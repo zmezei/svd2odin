@@ -7,15 +7,7 @@
         },
         {
             "name": "stm32f0",
-            "path": "hal/stm32f0"
-        },
-        {
-            "name": "stm32f0",
-            "path": "generated"
-        },
-        {
-            "name": "stm32f0",
-            "path": "core"
+            "path": ".ols/stm32f0"
         }
     ],
     "enable_semantic_tokens": true,
