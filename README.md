@@ -1,0 +1,164 @@
+# odin-svd
+
+SVD-to-Odin code generator and thin HAL for bare-metal STM32 development in [Odin](https://odin-lang.org/).
+
+This is the Odin equivalent of Rust's [svd2rust](https://docs.rs/svd2rust/) — parse a CMSIS-SVD file, generate Odin register definitions, then write a thin HAL on top. No C framework required.
+
+## Architecture
+
+```
+STM32F051.svd ──[svd2odin.py]──> generated/stm32f0.odin   (registers, fields, enums)
+                                         │
+                                         v
+                               hal/stm32f0/*.odin        (thin HAL: gpio, rcc, usart, timer)
+                                         │
+                                         v
+                               examples/*/main.odin       (your application)
+                                         │
+                               core/startup/*.s           (vector table, reset handler)
+                               core/linker/*.ld           (flash/RAM layout)
+                               core/cortex_m0.odin        (SysTick, NVIC, SCB)
+```
+
+### Three layers
+
+| Layer | Source | Editable? | Description |
+|-------|--------|-----------|-------------|
+| **Generated** | SVD file | No — regenerate | Register structs, field masks, base addresses |
+| **HAL** | Hand-written | Yes | Thin wrappers: `gpio_set_mode()`, `usart_write_byte()`, etc. |
+| **Core** | Hand-written | Yes | Startup assembly, linker scripts, Cortex-M0 core registers |
+
+## Quick start
+
+### Prerequisites
+
+- [Odin compiler](https://odin-lang.org/docs/install/) (latest)
+- ARM GCC toolchain: `arm-none-eabi-gcc`, `arm-none-eabi-objcopy`, `arm-none-eabi-size`
+- [stlink](https://github.com/stlink-org/stlink) for flashing (`st-flash`)
+- Python 3.10+ (for the generator)
+
+### 1. Get an SVD file
+
+Download the SVD file for your chip from [ST's website](https://www.st.com/en/microcontrollers-microprocessors/stm32-32-bit-arm-cortex-mcus.html) or [Keil's SVD repository](https://github.com/KeilMD/packs).
+
+For STM32F051:
+
+```bash
+# Place the SVD file in the svd/ directory
+cp /path/to/STM32F051.svd svd/stm32f051.svd
+```
+
+### 2. Generate register definitions
+
+```bash
+make generate
+# or manually:
+python3 tools/svd2odin.py svd/stm32f051.svd generated/stm32f0.odin --package stm32f0
+```
+
+### 3. Build and flash an example
+
+```bash
+# Build blinky
+make blinky
+
+# Flash to board (connect ST-Link to Bluepill)
+make flash-blinky
+```
+
+The on-board LED (PC13) should blink at 1 Hz.
+
+## Using the HAL
+
+```odin
+package main
+
+import "stm32f0"
+
+main :: proc() {
+    // Configure 48 MHz clock
+    stm32f0.rcc_config_48mhz_hsi48()
+
+    // Enable GPIOC and set PC13 as output
+    stm32f0.rcc_enable_gpio(stm32f0.gpioc)
+    stm32f0.gpio_config_output(stm32f0.gpioc, 13, .PushPull, .Low)
+
+    // Initialize timer for delays
+    stm32f0.tim2_init_us(48_000_000)
+
+    // Blink
+    for {
+        stm32f0.gpio_toggle(stm32f0.gpioc, 13)
+        stm32f0.delay_ms(500)
+    }
+}
+```
+
+### UART
+
+```odin
+// Initialize USART1 on PA9 (TX) / PA10 (RX) at 115200 baud
+stm32f0.usart1_init(115200, 48_000_000)
+stm32f0.usart_write_string(stm32f0.usart1, "Hello from Odin!\r\n")
+
+// Echo loop
+for {
+    if stm32f0.usart_data_available(stm32f0.usart1) {
+        byte := stm32f0.usart_read_byte(stm32f0.usart1)
+        stm32f0.usart_write_byte(stm32f0.usart1, byte)
+    }
+}
+```
+
+## Adding a new chip
+
+1. Download the SVD file for the new chip
+2. Run the generator: `python3 tools/svd2odin.py <new_chip>.svd generated/<new_chip>.odin --package <name>`
+3. If the chip is in the same family (e.g., STM32F030 vs STM32F051), the existing HAL works as-is
+4. If it's a new family, create a new directory under `hal/` and write thin wrappers
+5. Add a linker script in `core/linker/` with the correct flash/RAM addresses
+6. Add startup assembly in `core/startup/` with the correct vector table
+
+## Project structure
+
+```
+odin-svd/
+├── tools/
+│   └── svd2odin.py          # SVD → Odin register generator
+├── generated/               # Output of svd2odin.py (do not edit)
+│   └── stm32f0.odin
+├── hal/
+│   └── stm32f0/             # Thin HAL for STM32F0 family
+│       ├── gpio.odin
+│       ├── rcc.odin
+│       ├── usart.odin
+│       └── timer.odin
+├── core/
+│   ├── cortex_m0.odin       # SysTick, NVIC, SCB core registers
+│   ├── startup/
+│   │   └── startup_stm32f051.s
+│   └── linker/
+│       └── stm32f051.ld
+├── examples/
+│   ├── blinky/
+│   │   └── main.odin
+│   └── uart_echo/
+│       └── main.odin
+├── svd/                     # Place your SVD files here
+├── Makefile
+└── README.md
+```
+
+## Supported chips
+
+| Chip | SVD | HAL | Startup | Linker | Status |
+|------|-----|-----|---------|--------|--------|
+| STM32F051x8 | Yes | stm32f0 | Yes | Yes | Tested |
+| STM32F030 | Yes | stm32f0 | — | — | HAL compatible, needs linker |
+| STM32F103 | Yes | — | — | — | Needs HAL + startup |
+
+Adding support for a new family (F1, F4, G0, etc.) requires writing a new HAL directory and startup/linker files. The generator works with any CMSIS-SVD file.
+
+## License
+
+MIT

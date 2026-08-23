@@ -1,0 +1,22 @@
+# Build artifacts
+build/
+*.bin
+*.elf
+*.o
+*.a
+*.map
+*.lst
+
+# Generated register definitions are tracked in git (like Rust PACs)
+# Regenerate with: make generate
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
