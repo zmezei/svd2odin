@@ -1,4 +1,4 @@
-# odin-svd
+# svd2odin
 
 SVD-to-Odin code generator and thin HAL for bare-metal STM32 development in [Odin](https://odin-lang.org/).
 
@@ -7,17 +7,17 @@ This is the Odin equivalent of Rust's [svd2rust](https://docs.rs/svd2rust/) — 
 ## Architecture
 
 ```
-STM32F051.svd ──[svd2odin.py]──> generated/stm32f0.odin   (registers, fields, enums)
-                                         │
-                                         v
-                               hal/stm32f0/*.odin        (thin HAL: gpio, rcc, usart, timer)
-                                         │
-                                         v
-                               examples/*/main.odin       (your application)
-                                         │
-                               core/startup/*.s           (vector table, reset handler)
-                               core/linker/*.ld           (flash/RAM layout)
-                               core/cortex_m0.odin        (SysTick, NVIC, SCB)
+STM32F051.svd ──[svd2odin.py]──> stm32f0/registers.odin   (registers, fields, enums)
+                                      │
+                                      v
+                            stm32f0/*.odin              (thin HAL: gpio, rcc, usart, timer)
+                                      │
+                                      v
+                            examples/*/main.odin         (your application)
+                                      │
+                            core/startup/*.s             (vector table, reset handler)
+                            core/linker/*.ld             (flash/RAM layout)
+                            core/cortex_m0.odin          (SysTick, NVIC, SCB)
 ```
 
 ### Three layers
@@ -53,7 +53,7 @@ cp /path/to/STM32F051.svd svd/stm32f051.svd
 ```bash
 make generate
 # or manually:
-python3 tools/svd2odin.py svd/stm32f051.svd generated/stm32f0.odin --package stm32f0
+python3 tools/svd2odin.py svd/stm32f051.svd stm32f0/registers.odin --package stm32f0
 ```
 
 ### 3. Build and flash an example
@@ -73,7 +73,7 @@ The on-board LED (PC13) should blink at 1 Hz.
 ```odin
 package main
 
-import "stm32f0"
+import "stm32f0:stm32f0"
 
 main :: proc() {
     // Configure 48 MHz clock
@@ -113,26 +113,24 @@ for {
 ## Adding a new chip
 
 1. Download the SVD file for the new chip
-2. Run the generator: `python3 tools/svd2odin.py <new_chip>.svd generated/<new_chip>.odin --package <name>`
+2. Run the generator: `python3 tools/svd2odin.py <new_chip>.svd <new_chip>/registers.odin --package <name>`
 3. If the chip is in the same family (e.g., STM32F030 vs STM32F051), the existing HAL works as-is
-4. If it's a new family, create a new directory under `hal/` and write thin wrappers
+4. If it's a new family, create a new directory and write thin wrappers
 5. Add a linker script in `core/linker/` with the correct flash/RAM addresses
 6. Add startup assembly in `core/startup/` with the correct vector table
 
 ## Project structure
 
 ```
-odin-svd/
+svd2odin/
 ├── tools/
 │   └── svd2odin.py          # SVD → Odin register generator
-├── generated/               # Output of svd2odin.py (do not edit)
-│   └── stm32f0.odin
-├── hal/
-│   └── stm32f0/             # Thin HAL for STM32F0 family
-│       ├── gpio.odin
-│       ├── rcc.odin
-│       ├── usart.odin
-│       └── timer.odin
+├── stm32f0/                 # Generated + HAL for STM32F0 family
+│   ├── registers.odin       # Generated (do not edit)
+│   ├── gpio.odin            # HAL
+│   ├── rcc.odin             # HAL
+│   ├── usart.odin           # HAL
+│   └── timer.odin           # HAL
 ├── core/
 │   ├── cortex_m0.odin       # SysTick, NVIC, SCB core registers
 │   ├── startup/
@@ -145,6 +143,8 @@ odin-svd/
 │   └── uart_echo/
 │       └── main.odin
 ├── svd/                     # Place your SVD files here
+├── ols.json                 # OLS language server config
+├── odinfmt.json             # Formatter config
 ├── Makefile
 └── README.md
 ```
