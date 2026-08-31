@@ -1,0 +1,76 @@
+# Regression test definitions for svd2odin
+#
+# Each test specifies a chip, manufacturer, and SVD URL.
+# The regression script downloads the SVD, generates Odin code,
+# and verifies it compiles with `odin build`.
+#
+# SVD files are sourced from the CMSIS-SVD repository:
+#   https://github.com/cmsis-svd/cmsis-svd-data
+
+# ── STMicro ──
+- arch: cortex-m
+  mfgr: STMicro
+  chip: STM32F030
+  svd_url: https://raw.githubusercontent.com/cmsis-svd/cmsis-svd-data/main/data/STMicro/STM32F030.svd
+
+- arch: cortex-m
+  mfgr: STMicro
+  chip: STM32F103
+  svd_url: https://raw.githubusercontent.com/cmsis-svd/cmsis-svd-data/main/data/STMicro/STM32F103xx.svd
+
+- arch: cortex-m
+  mfgr: STMicro
+  chip: STM32F407
+  svd_url: https://raw.githubusercontent.com/cmsis-svd/cmsis-svd-data/main/data/STMicro/STM32F407.svd
+
+- arch: cortex-m
+  mfgr: STMicro
+  chip: STM32F411
+  svd_url: https://raw.githubusercontent.com/cmsis-svd/cmsis-svd-data/main/data/STMicro/STM32F411.svd
+
+- arch: cortex-m
+  mfgr: STMicro
+  chip: STM32F429
+  svd_url: https://raw.githubusercontent.com/cmsis-svd/cmsis-svd-data/main/data/STMicro/STM32F429.svd
+
+- arch: cortex-m
+  mfgr: STMicro
+  chip: STM32G070
+  svd_url: https://raw.githubusercontent.com/cmsis-svd/cmsis-svd-data/main/data/STMicro/STM32G070.svd
+
+- arch: cortex-m
+  mfgr: STMicro
+  chip: STM32G473
+  svd_url: https://raw.githubusercontent.com/cmsis-svd/cmsis-svd-data/main/data/STMicro/STM32G473xx.svd
+
+- arch: cortex-m
+  mfgr: STMicro
+  chip: STM32H743
+  svd_url: https://raw.githubusercontent.com/cmsis-svd/cmsis-svd-data/main/data/STMicro/STM32H743x.svd
+
+- arch: cortex-m
+  mfgr: STMicro
+  chip: STM32L4x6
+  svd_url: https://raw.githubusercontent.com/cmsis-svd/cmsis-svd-data/main/data/STMicro/STM32L4x6.svd
+
+- arch: cortex-m
+  mfgr: STMicro
+  chip: STM32L562
+  svd_url: https://raw.githubusercontent.com/cmsis-svd/cmsis-svd-data/main/data/STMicro/STM32L562.svd
+
+# ── Nordic ──
+- arch: cortex-m
+  mfgr: Nordic
+  chip: nrf51
+  svd_url: https://raw.githubusercontent.com/cmsis-svd/cmsis-svd-data/main/data/Nordic/nrf51.svd
+
+- arch: cortex-m
+  mfgr: Nordic
+  chip: nrf52
+  svd_url: https://raw.githubusercontent.com/cmsis-svd/cmsis-svd-data/main/data/Nordic/nrf52.svd
+
+# ── Raspberry Pi ──
+- arch: cortex-m
+  mfgr: RaspberryPi
+  chip: rp2040
+  svd_url: https://raw.githubusercontent.com/cmsis-svd/cmsis-svd-data/main/data/RaspberryPi/rp2040.svd

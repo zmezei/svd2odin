@@ -5673,7 +5673,8 @@ RTC_Reg :: struct {
     CR: u32,  // 0x08 RW — control register
     ISR: RTC_ISR_Set,  // 0x0C RW — initialization and status register
     PRER: u32,  // 0x10 RW — prescaler register
-    _reserved_001C: [8]u8,  // padding
+    WUTR: u32,  // 0x14 RW — wakeup timer register
+    _reserved_001C: [4]u8,  // padding
     ALRMAR: u32,  // 0x1C RW — alarm A register
     _reserved_0024: [4]u8,  // padding
     WPR: u32,  // 0x24 WO — write protection register
@@ -5876,6 +5877,9 @@ RTC_PRER_PREDIV_A_MSK :: 0x7F0000
 
 RTC_PRER_PREDIV_S_POS :: 0
 RTC_PRER_PREDIV_S_MSK :: 0x7FFF
+
+RTC_WUTR_WUT_POS :: 0
+RTC_WUTR_WUT_MSK :: 0xFFFF
 
 RTC_ALRMAR_MSK4_POS :: 31
 RTC_ALRMAR_MSK4_MSK :: 0x80000000
@@ -6083,9 +6087,6 @@ RTC_BKP3R_BKP_MSK :: 0xFFFFFFFF
 
 RTC_BKP4R_BKP_POS :: 0
 RTC_BKP4R_BKP_MSK :: 0xFFFFFFFF
-
-RTC_WUTR_WUT_POS :: 0
-RTC_WUTR_WUT_MSK :: 0xFFFF
 
 // ── TIM15 (same register layout as TIM) ──
 
@@ -18525,9 +18526,14 @@ DAC_Reg :: struct {
     DHR12R1: u32,  // 0x08 RW — channel1 12-bit right-aligned data holding register
     DHR12L1: u32,  // 0x0C RW — channel1 12-bit left aligned data holding register
     DHR8R1: u32,  // 0x10 RW — channel1 8-bit right aligned data holding register
-    _reserved_002C: [24]u8,  // padding
+    DHR12R2: u32,  // 0x14 RW — DAC channel2 12-bit right-aligned data holding register
+    DHR12L2: u32,  // 0x18 RW — DAC channel2 12-bit left-aligned data holding register
+    DHR8R2: u32,  // 0x1C RW — DAC channel2 8-bit right-aligned data holding register
+    DHR12RD: u32,  // 0x20 RW — DHR12RD
+    DHR12LD: u32,  // 0x24 RW — Dual DAC 12-bit left-aligned data holding register
+    DHR8RD: u32,  // 0x28 RW — Dual DAC 8-bit right-aligned data holding register
     DOR1: u32,  // 0x2C RO — channel1 data output register
-    _reserved_0034: [4]u8,  // padding
+    DOR2: u32,  // 0x30 RO — DAC channel2 data output register
     SR: DAC_SR_Set,  // 0x34 RW — status register
 }
 
@@ -18610,17 +18616,6 @@ DAC_DHR12L1_DACC1DHR_MSK :: 0xFFF0
 DAC_DHR8R1_DACC1DHR_POS :: 0
 DAC_DHR8R1_DACC1DHR_MSK :: 0xFF
 
-DAC_DOR1_DACC1DOR_POS :: 0
-DAC_DOR1_DACC1DOR_MSK :: 0xFFF
-
-DAC_SR_DMAUDR2_POS :: 29
-DAC_SR_DMAUDR2_MSK :: 0x20000000
-DAC_SR_DMAUDR2_BIT :: 1 << 29
-
-DAC_SR_DMAUDR1_POS :: 13
-DAC_SR_DMAUDR1_MSK :: 0x2000
-DAC_SR_DMAUDR1_BIT :: 1 << 13
-
 DAC_DHR12R2_DACC2DHR_POS :: 0
 DAC_DHR12R2_DACC2DHR_MSK :: 0xFFF
 
@@ -18648,8 +18643,19 @@ DAC_DHR8RD_DACC2DHR_MSK :: 0xFF00
 DAC_DHR8RD_DACC1DHR_POS :: 0
 DAC_DHR8RD_DACC1DHR_MSK :: 0xFF
 
+DAC_DOR1_DACC1DOR_POS :: 0
+DAC_DOR1_DACC1DOR_MSK :: 0xFFF
+
 DAC_DOR2_DACC2DOR_POS :: 0
 DAC_DOR2_DACC2DOR_MSK :: 0xFFF
+
+DAC_SR_DMAUDR2_POS :: 29
+DAC_SR_DMAUDR2_MSK :: 0x20000000
+DAC_SR_DMAUDR2_BIT :: 1 << 29
+
+DAC_SR_DMAUDR1_POS :: 13
+DAC_SR_DMAUDR1_MSK :: 0x2000
+DAC_SR_DMAUDR1_BIT :: 1 << 13
 
 // ── SCB: System control block ──
 

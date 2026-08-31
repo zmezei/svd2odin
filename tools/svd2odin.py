@@ -169,25 +169,17 @@ def derive_group_name(name: str, group: str) -> str:
     """Derive a group name from the peripheral name if the SVD doesn't provide one.
 
     SVD files are inconsistent — some GPIO ports have groupName=GPIO, others
-    have no groupName at all. We normalize by stripping trailing digits and
-    a single trailing uppercase letter from the peripheral name.
+    have no groupName at all. We normalize by stripping trailing digits from
+    the peripheral name.
 
     Rules:
     - If the SVD provides a groupName, use it.
     - Strip trailing digits: TIM2 -> TIM, USART2 -> USART
-    - Strip a single trailing uppercase letter ONLY if digits were stripped
-      and the remaining name is all uppercase: GPIOB -> GPIO, GPIOF -> GPIO
-    - Don't strip letters if no digits were present: TIM -> TIM (not TI)
+    - Don't strip letters: GPIOB -> GPIOB (not GPIO)
     """
     if group:
         return sanitize_odin_identifier(group)
-    # Strip trailing digits
     base = re.sub(r"\d+$", "", name)
-    if base != name:
-        # Digits were stripped — now strip a single trailing uppercase letter
-        # only if the entire remaining string is uppercase (e.g., GPIOB -> GPIO)
-        if base and base.isupper() and len(base) > 2:
-            base = base[:-1]
     return sanitize_odin_identifier(base) if base else sanitize_odin_identifier(name)
 
 
@@ -283,10 +275,25 @@ def generate_peripheral(p: PeripheralInfo, group_name: str = None) -> str:
     lines.append(f"{p.name}_BASE :: 0x{p.base_address:08X}")
     lines.append("")
 
+    # Sort registers by offset so the struct fields are in ascending order
+    sorted_regs = sorted(p.registers, key=lambda r: r.offset)
+
+    # Deduplicate registers by name — SVD files with nested <cluster> elements
+    # can contain the same register name multiple times at different offsets.
+    # We keep only the first occurrence of each register name.
+    seen_reg_names: set[str] = set()
+    deduped_regs: list[RegisterInfo] = []
+    for reg in sorted_regs:
+        if reg.name in seen_reg_names:
+            continue
+        seen_reg_names.add(reg.name)
+        deduped_regs.append(reg)
+    sorted_regs = deduped_regs
+
     # For registers composed entirely of 1-bit flags, generate a Flag enum
     # and a bit_set type alias so the struct field can be type-safe.
     bit_set_types: dict[str, str] = {}  # reg.name -> set_type_name
-    for reg in p.registers:
+    for reg in sorted_regs:
         if not is_all_single_bit(reg):
             continue
         flag_name = f"{field_prefix_base}_{reg.name}_Flag"
@@ -305,15 +312,15 @@ def generate_peripheral(p: PeripheralInfo, group_name: str = None) -> str:
     # Register struct — named after the group so shared peripherals reuse it
     struct_name = f"{struct_base}_Reg"
     lines.append(f"{struct_name} :: struct {{")
-    prev_offset = 0
-    for reg in p.registers:
-        # Skip registers that overlap with the previous one (alternate views
-        # of the same physical register, e.g. CCMR1_Output vs CCMR1_Input)
-        if reg.offset < prev_offset:
+    prev_end = 0  # end of last emitted field (offset + size_bytes)
+    for reg in sorted_regs:
+        reg_end = reg.offset + (reg.size // 8)
+        # Skip registers that overlap with an already-emitted field
+        if reg.offset < prev_end:
             continue
         # Insert padding if there are gaps
-        gap = reg.offset - prev_offset
-        if gap > 0 and prev_offset > 0:
+        gap = reg.offset - prev_end
+        if gap > 0:
             lines.append(f"    _reserved_{reg.offset:04X}: [{gap}]u8,  // padding")
         if reg.name in bit_set_types:
             field_type = bit_set_types[reg.name]
@@ -324,13 +331,13 @@ def generate_peripheral(p: PeripheralInfo, group_name: str = None) -> str:
         if reg.description:
             comment += f" — {reg.description}"
         lines.append(f"    {reg.name}: {field_type},{comment}")
-        prev_offset = reg.offset + (reg.size // 8)
+        prev_end = reg_end
     lines.append("}")
     lines.append("")
 
     # Compile-time size check — catches layout bugs immediately
-    if prev_offset > 0:
-        lines.append(f"#assert(size_of({struct_name}) == {prev_offset})")
+    if prev_end > 0:
+        lines.append(f"#assert(size_of({struct_name}) == {prev_end})")
         lines.append("")
 
     # Instance pointer
@@ -339,7 +346,7 @@ def generate_peripheral(p: PeripheralInfo, group_name: str = None) -> str:
 
     # Field constants — use group name as prefix so all peripherals
     # in the same group share the same field constants
-    for reg in p.registers:
+    for reg in sorted_regs:
         if not reg.fields:
             continue
         for f in reg.fields:
