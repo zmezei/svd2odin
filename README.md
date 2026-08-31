@@ -256,4 +256,4 @@ When submitting a PR for a chip the maintainer does not own:
 
 ## License
 
-MIT
+[MIT](LICENSE)
