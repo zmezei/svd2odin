@@ -27,8 +27,8 @@ SVD_FILE    := $(ROOT)/svd/stm32f051.svd
 SVD_GEN     := $(STM32F0_DIR)/registers.odin
 
 # ── Odin compiler flags ──
-ODIN_TARGET := -target:freestanding_arm32_none_eabi
-ODIN_FLAGS  := -file -no-crt -no-thread-local -default-to-nil-allocator -vet \
+ODIN_TARGET := -target:freestanding_arm32 -target-features:"thumb-mode,armv6s-m"
+ODIN_FLAGS  := -file -no-crt -no-thread-local -default-to-nil-allocator -no-entry-point -disable-unwind -vet \
                -collection:stm32f0=$(ROOT)
 
 # ── Build directory ──
@@ -58,13 +58,15 @@ $(BUILD_DIR)/%.elf: examples/%/main.odin $(SVD_GEN) $(STARTUP)
 	@echo "Building $*..."
 	# Compile startup assembly
 	arm-none-eabi-gcc -c -mcpu=cortex-m0 -mthumb $(STARTUP) -o $(BUILD_DIR)/startup.o
-	# Compile Odin source
+	# Compile Odin source to object files
 	$(ODIN) build examples/$*/main.odin $(ODIN_TARGET) $(ODIN_FLAGS) \
-		-out:$@ -build-mode:obj
+		-out:$(BUILD_DIR)/$*_odin -build-mode:obj
 	# Link
 	arm-none-eabi-gcc -nostdlib -mcpu=cortex-m0 -mthumb \
-		-T$(LINKER) -Wl,--gc-sections \
-		$(BUILD_DIR)/startup.o $@ -o $@
+		-T$(LINKER) -Wl,--gc-sections,--no-warn-mismatch \
+		$(BUILD_DIR)/startup.o $(BUILD_DIR)/$*_odin*.o -lgcc \
+		-Wl,--defsym,__truncdfsf2=0,--defsym,__mulsf3=0 \
+		-o $@
 	# Show size
 	arm-none-eabi-size $@
 

@@ -28,6 +28,16 @@ STM32F051.svd ──[svd2odin.py]──> stm32f0/registers.odin   (registers, fi
 | **HAL** | Hand-written | Yes | Thin wrappers: `gpio_set_mode()`, `usart_write_byte()`, etc. |
 | **Core** | Hand-written | Yes | Startup assembly, linker scripts, Cortex-M0 core registers |
 
+## Tested hardware
+
+Both examples have been tested on an **STM32F051 Bluepill** development board:
+
+- **MCU:** STM32F051R8T6 (Cortex-M0, 48 MHz, 64 KB flash, 8 KB SRAM)
+- **LED:** PC13 (active-low, on-board)
+- **UART:** USART1 on PA9 (TX) / PA10 (RX) at 115200 baud
+- **Flasher:** ST-Link V2 (SWD)
+- **Clock:** HSI + PLL at 48 MHz
+
 ## Quick start
 
 ### Prerequisites
@@ -68,6 +78,14 @@ make flash-blinky
 
 The on-board LED (PC13) should blink at 1 Hz.
 
+```bash
+# Build and flash UART echo
+make uart_echo
+make flash-uart-echo
+```
+
+Connect a serial adapter to PA9 (TX) / PA10 (RX) at 115200 baud. The board sends a startup message and echoes back any characters you type.
+
 ## Using the HAL
 
 ```odin
@@ -75,9 +93,10 @@ package main
 
 import "stm32f0:stm32f0"
 
-main :: proc() {
-    // Configure 48 MHz clock
-    stm32f0.rcc_config_48mhz_hsi48()
+@(export=true)
+entry :: proc() {
+    // Configure 48 MHz clock (HSI + PLL)
+    stm32f0.rcc_config_48mhz_pll()
 
     // Enable GPIOC and set PC13 as output
     stm32f0.rcc_enable_gpio(stm32f0.gpioc)
@@ -148,6 +167,66 @@ svd2odin/
 ├── Makefile
 └── README.md
 ```
+
+## Generated code patterns
+
+The generator produces three kinds of register field representations depending on the SVD field layout:
+
+### Bit sets (all 1-bit fields)
+
+Registers composed entirely of 1-bit flags (e.g., status registers, interrupt enable registers) are emitted as Odin `bit_set` types with a backing `enum`:
+
+```odin
+RCC_AHBENR_Flag :: enum u32 {
+    DMA1EN = 0,
+    SRAMEN = 2,
+    IOPAEN = 17,
+    // ...
+}
+
+RCC_AHBENR_Set :: bit_set[RCC_AHBENR_Flag; u32]
+```
+
+This lets you use set algebra instead of manual bitmath:
+
+```odin
+rcc_enable_ahb({.IOPAEN, .CRCEN})    // set bits
+rcc_disable_ahb({.DMA1EN})           // clear bits
+.IOPAEN in intrinsics.volatile_load(&rcc.AHBENR)  // test bit
+```
+
+### Plain integers (mixed-width fields)
+
+Registers with multi-bit fields (e.g., 2-bit mode selectors, 4-bit prescalers) stay as plain `u32` with `_POS`, `_MSK`, and `_BIT` constants:
+
+```odin
+GPIO_MODER_MODER0_POS :: 0
+GPIO_MODER_MODER0_MSK :: 0x3
+```
+
+### Enumerated values (from SVD `<enumeratedValues>`)
+
+When the SVD provides enumerated values for a field, the generator emits an Odin enum:
+
+```odin
+TEST_CR_MODE_Val :: enum u32 {
+    Disabled = 0,
+    Enabled  = 1,
+    Auto     = 2,
+}
+```
+
+### Compile-time size checks
+
+Every generated register struct includes a `#assert(size_of(...))` check to catch layout bugs at compile time:
+
+```odin
+#assert(size_of(GPIO_Reg) == 44)
+```
+
+### Volatile access
+
+The HAL uses `intrinsics.volatile_load` and `intrinsics.volatile_store` for all register access, preventing the compiler from optimizing away or caching hardware register reads and writes.
 
 ## Supported chips
 

@@ -5,11 +5,8 @@
 // Echoes received characters back, toggling PC13 LED on each byte.
 //
 // Build:
-//   odin build main.odin -file -out:uart_echo.elf \
-//     -target:freestanding_arm32_none_eabi -no-crt -no-thread-local \
-//     -default-to-nil-allocator -collection:stm32f0=../.. -vet
-//   arm-none-eabi-objcopy -O binary uart_echo.elf uart_echo.bin
-//   st-flash write uart_echo.bin 0x08000000
+//   make uart_echo
+//   make flash-uart-echo
 // ──────────────────────────────────────────────────────────────────────
 
 package main
@@ -19,9 +16,10 @@ import "stm32f0:stm32f0"
 SYSTEM_CLOCK_HZ :: 48_000_000
 LED_PIN :: 13  // PC13 on Bluepill
 
-main :: proc() {
-    // Configure system clock to 48 MHz
-    stm32f0.rcc_config_48mhz_hsi48()
+@(export=true)
+entry :: proc() {
+    // Configure system clock to 48 MHz (HSI + PLL, same as libopencm3)
+    stm32f0.rcc_config_48mhz_pll()
 
     // Enable GPIOC and configure LED
     stm32f0.rcc_enable_gpio(stm32f0.gpioc)

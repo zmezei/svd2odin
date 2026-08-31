@@ -9,6 +9,7 @@
 package cortex_m0
 
 import "core:mem"
+import "base:intrinsics"
 
 // ── System Control Block (SCB) ──
 
@@ -100,14 +101,16 @@ SCB_AIRCR_SYSRESETREQ :: 1 << 2
 // Enable a specific interrupt (IRQn 0-31 for Cortex-M0)
 nvic_enable_irq :: proc(irqn: i32) {
     if irqn >= 0 && irqn < 32 {
-        nvic.ISER[0] |= 1 << irqn
+        current := intrinsics.volatile_load(&nvic.ISER[0])
+        intrinsics.volatile_store(&nvic.ISER[0], current | (1 << irqn))
     }
 }
 
 // Disable a specific interrupt
 nvic_disable_irq :: proc(irqn: i32) {
     if irqn >= 0 && irqn < 32 {
-        nvic.ICER[0] |= 1 << irqn
+        current := intrinsics.volatile_load(&nvic.ICER[0])
+        intrinsics.volatile_store(&nvic.ICER[0], current | (1 << irqn))
     }
 }
 
@@ -116,30 +119,30 @@ nvic_set_priority :: proc(irqn: i32, priority: u8) {
     if irqn >= 0 && irqn < 32 {
         // Cortex-M0 uses top 2 bits of each priority byte
         shifted :: priority & 0x3
-        nvic.IPR[irqn] = shifted << 6
+        intrinsics.volatile_store(&nvic.IPR[irqn], shifted << 6)
     }
 }
 
 // Configure SysTick for periodic interrupts
 // reload = clock_hz / ticks_per_sec - 1
 systick_config :: proc(reload: u32, enable_interrupt: bool) {
-    systick.RVR = reload
-    systick.CVR = 0
+    intrinsics.volatile_store(&systick.RVR, reload)
+    intrinsics.volatile_store(&systick.CVR, 0)
     ctrl: u32 = SYSTICK_CSR_ENABLE | SYSTICK_CSR_CLKSOURCE
     if enable_interrupt {
         ctrl |= SYSTICK_CSR_TICKINT
     }
-    systick.CSR = ctrl
+    intrinsics.volatile_store(&systick.CSR, ctrl)
 }
 
 // Get SysTick counter value (counts down from reload to 0)
 systick_get_value :: proc() -> u32 {
-    return systick.CVR
+    return intrinsics.volatile_load(&systick.CVR)
 }
 
 // Check if SysTick has wrapped (COUNTFLAG set)
 systick_check_overflow :: proc() -> bool {
-    return (systick.CSR & SYSTICK_CSR_COUNTFLAG) != 0
+    return (intrinsics.volatile_load(&systick.CSR) & SYSTICK_CSR_COUNTFLAG) != 0
 }
 
 // Global interrupt control
@@ -162,6 +165,6 @@ disable_interrupts :: proc() -> bool {
 // System reset
 system_reset :: proc() {
     scb_raw := (^u32)(rawptr(uintptr(SCB_AIRCR)))
-    scb_raw^ = SCB_AIRCR_VECTKEY | SCB_AIRCR_SYSRESETREQ
+    intrinsics.volatile_store(scb_raw, SCB_AIRCR_VECTKEY | SCB_AIRCR_SYSRESETREQ)
     for {}
 }

@@ -260,11 +260,17 @@ def odin_access_comment(access: str) -> str:
     return mapping.get(access, "RW")
 
 
+def is_all_single_bit(reg: RegisterInfo) -> bool:
+    """True if the register has fields and every field is exactly 1 bit wide."""
+    return bool(reg.fields) and all(f.bit_width == 1 for f in reg.fields)
+
+
 def generate_peripheral(p: PeripheralInfo, group_name: str = None) -> str:
     lines = []
 
     # Use group name for the struct, peripheral name for everything else
     struct_base = group_name if group_name else p.name
+    field_prefix_base = group_name if group_name else p.name
 
     # Header comment
     if p.description:
@@ -277,17 +283,42 @@ def generate_peripheral(p: PeripheralInfo, group_name: str = None) -> str:
     lines.append(f"{p.name}_BASE :: 0x{p.base_address:08X}")
     lines.append("")
 
+    # For registers composed entirely of 1-bit flags, generate a Flag enum
+    # and a bit_set type alias so the struct field can be type-safe.
+    bit_set_types: dict[str, str] = {}  # reg.name -> set_type_name
+    for reg in p.registers:
+        if not is_all_single_bit(reg):
+            continue
+        flag_name = f"{field_prefix_base}_{reg.name}_Flag"
+        set_name = f"{field_prefix_base}_{reg.name}_Set"
+        bit_set_types[reg.name] = set_name
+
+        backing_type = odin_type_for_size(reg.size)
+        lines.append(f"{flag_name} :: enum {backing_type} {{")
+        for f in reg.fields:
+            lines.append(f"    {f.name} = {f.bit_offset},")
+        lines.append("}")
+        lines.append("")
+        lines.append(f"{set_name} :: bit_set[{flag_name}; {backing_type}]")
+        lines.append("")
+
     # Register struct — named after the group so shared peripherals reuse it
     struct_name = f"{struct_base}_Reg"
     lines.append(f"{struct_name} :: struct {{")
     prev_offset = 0
     for reg in p.registers:
+        # Skip registers that overlap with the previous one (alternate views
+        # of the same physical register, e.g. CCMR1_Output vs CCMR1_Input)
+        if reg.offset < prev_offset:
+            continue
         # Insert padding if there are gaps
         gap = reg.offset - prev_offset
         if gap > 0 and prev_offset > 0:
-            pad_type = odin_type_for_size(8)
             lines.append(f"    _reserved_{reg.offset:04X}: [{gap}]u8,  // padding")
-        field_type = odin_type_for_size(reg.size)
+        if reg.name in bit_set_types:
+            field_type = bit_set_types[reg.name]
+        else:
+            field_type = odin_type_for_size(reg.size)
         access_tag = odin_access_comment(reg.access)
         comment = f"  // 0x{reg.offset:02X} {access_tag}"
         if reg.description:
@@ -297,13 +328,17 @@ def generate_peripheral(p: PeripheralInfo, group_name: str = None) -> str:
     lines.append("}")
     lines.append("")
 
+    # Compile-time size check — catches layout bugs immediately
+    if prev_offset > 0:
+        lines.append(f"#assert(size_of({struct_name}) == {prev_offset})")
+        lines.append("")
+
     # Instance pointer
     lines.append(f"{p.name.lower()} := (^{struct_name})(rawptr(uintptr({p.name}_BASE)))")
     lines.append("")
 
     # Field constants — use group name as prefix so all peripherals
     # in the same group share the same field constants
-    field_prefix_base = group_name if group_name else p.name
     for reg in p.registers:
         if not reg.fields:
             continue
@@ -335,8 +370,7 @@ def generate_odin(peripherals: list[PeripheralInfo], package_name: str, svd_file
     lines.append("")
     lines.append(f"package {package_name}")
     lines.append("")
-    lines.append("import \"core:mem\"")
-    lines.append("import \"core:intrinsics\"")
+    lines.append("import \"base:intrinsics\"")
     lines.append("")
 
     # Collect all enumerated values that appear across peripherals

@@ -7,6 +7,8 @@
 
 package stm32f0
 
+import "base:intrinsics"
+
 // GPIO pin modes (MODER register)
 GPIO_Mode :: enum u32 {
     Input   = 0x0,
@@ -51,60 +53,67 @@ GPIO_AF :: enum u32 {
 
 gpio_set_mode :: proc(port: ^GPIO_Reg, pin: u8, mode: GPIO_Mode) {
     pos := u32(pin) * 2
-    port.MODER = (port.MODER & ~(0x3 << pos)) | (u32(mode) << pos)
+    current := intrinsics.volatile_load(&port.MODER)
+    intrinsics.volatile_store(&port.MODER, (current & ~(0x3 << pos)) | (u32(mode) << pos))
 }
 
 gpio_set_otype :: proc(port: ^GPIO_Reg, pin: u8, otype: GPIO_OType) {
+    current := intrinsics.volatile_load(&port.OTYPER)
     if otype == .OpenDrain {
-        port.OTYPER |= 1 << pin
+        intrinsics.volatile_store(&port.OTYPER, current + {GPIO_OTYPER_Flag(pin)})
     } else {
-        port.OTYPER &= ~(1 << pin)
+        intrinsics.volatile_store(&port.OTYPER, current - {GPIO_OTYPER_Flag(pin)})
     }
 }
 
 gpio_set_speed :: proc(port: ^GPIO_Reg, pin: u8, speed: GPIO_Speed) {
     pos := u32(pin) * 2
-    port.OSPEEDR = (port.OSPEEDR & ~(0x3 << pos)) | (u32(speed) << pos)
+    current := intrinsics.volatile_load(&port.OSPEEDR)
+    intrinsics.volatile_store(&port.OSPEEDR, (current & ~(0x3 << pos)) | (u32(speed) << pos))
 }
 
 gpio_set_pull :: proc(port: ^GPIO_Reg, pin: u8, pull: GPIO_Pull) {
     pos := u32(pin) * 2
-    port.PUPDR = (port.PUPDR & ~(0x3 << pos)) | (u32(pull) << pos)
+    current := intrinsics.volatile_load(&port.PUPDR)
+    intrinsics.volatile_store(&port.PUPDR, (current & ~(0x3 << pos)) | (u32(pull) << pos))
 }
 
 gpio_set_af :: proc(port: ^GPIO_Reg, pin: u8, af: GPIO_AF) {
     if pin < 8 {
         pos := u32(pin) * 4
-        port.AFRL = (port.AFRL & ~(0xF << pos)) | (u32(af) << pos)
+        current := intrinsics.volatile_load(&port.AFRL)
+        intrinsics.volatile_store(&port.AFRL, (current & ~(0xF << pos)) | (u32(af) << pos))
     } else {
         pos := (u32(pin) - 8) * 4
-        port.AFRH = (port.AFRH & ~(0xF << pos)) | (u32(af) << pos)
+        current := intrinsics.volatile_load(&port.AFRH)
+        intrinsics.volatile_store(&port.AFRH, (current & ~(0xF << pos)) | (u32(af) << pos))
     }
 }
 
 // Set pin high (atomic via BSRR)
 gpio_set :: proc(port: ^GPIO_Reg, pin: u8) {
-    port.BSRR = 1 << pin
+    intrinsics.volatile_store(&port.BSRR, {GPIO_BSRR_Flag(pin)})
 }
 
 // Set pin low (atomic via BSRR)
 gpio_clear :: proc(port: ^GPIO_Reg, pin: u8) {
-    port.BSRR = 1 << (pin + 16)
+    intrinsics.volatile_store(&port.BSRR, {GPIO_BSRR_Flag(pin + 16)})
 }
 
 // Toggle pin via ODR
 gpio_toggle :: proc(port: ^GPIO_Reg, pin: u8) {
-    port.ODR ^= 1 << pin
+    current := intrinsics.volatile_load(&port.ODR)
+    intrinsics.volatile_store(&port.ODR, current ~ {GPIO_ODR_Flag(pin)})
 }
 
 // Read pin input value
 gpio_read :: proc(port: ^GPIO_Reg, pin: u8) -> bool {
-    return (port.IDR & (1 << pin)) != 0
+    return GPIO_IDR_Flag(pin) in intrinsics.volatile_load(&port.IDR)
 }
 
 // Read output data register value
 gpio_read_odr :: proc(port: ^GPIO_Reg, pin: u8) -> bool {
-    return (port.ODR & (1 << pin)) != 0
+    return GPIO_ODR_Flag(pin) in intrinsics.volatile_load(&port.ODR)
 }
 
 // Configure a pin as output with given speed and type

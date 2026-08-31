@@ -5,8 +5,7 @@
 
 package stm32f0
 
-import "core:mem"
-import "core:intrinsics"
+import "base:intrinsics"
 
 // ── CRC: cyclic redundancy check calculation unit ──
 
@@ -18,6 +17,8 @@ CRC_Reg :: struct {
     CR: u32,  // 0x08 RW — Control register
     INIT: u32,  // 0x0C RW — Initial CRC value
 }
+
+#assert(size_of(CRC_Reg) == 16)
 
 crc := (^CRC_Reg)(rawptr(uintptr(CRC_BASE)))
 
@@ -48,19 +49,164 @@ CRC_INIT_INIT_MSK :: 0xFFFFFFFF
 
 GPIOF_BASE :: 0x48001400
 
+GPIO_OTYPER_Flag :: enum u32 {
+    OT15 = 15,
+    OT14 = 14,
+    OT13 = 13,
+    OT12 = 12,
+    OT11 = 11,
+    OT10 = 10,
+    OT9 = 9,
+    OT8 = 8,
+    OT7 = 7,
+    OT6 = 6,
+    OT5 = 5,
+    OT4 = 4,
+    OT3 = 3,
+    OT2 = 2,
+    OT1 = 1,
+    OT0 = 0,
+}
+
+GPIO_OTYPER_Set :: bit_set[GPIO_OTYPER_Flag; u32]
+
+GPIO_IDR_Flag :: enum u32 {
+    IDR15 = 15,
+    IDR14 = 14,
+    IDR13 = 13,
+    IDR12 = 12,
+    IDR11 = 11,
+    IDR10 = 10,
+    IDR9 = 9,
+    IDR8 = 8,
+    IDR7 = 7,
+    IDR6 = 6,
+    IDR5 = 5,
+    IDR4 = 4,
+    IDR3 = 3,
+    IDR2 = 2,
+    IDR1 = 1,
+    IDR0 = 0,
+}
+
+GPIO_IDR_Set :: bit_set[GPIO_IDR_Flag; u32]
+
+GPIO_ODR_Flag :: enum u32 {
+    ODR15 = 15,
+    ODR14 = 14,
+    ODR13 = 13,
+    ODR12 = 12,
+    ODR11 = 11,
+    ODR10 = 10,
+    ODR9 = 9,
+    ODR8 = 8,
+    ODR7 = 7,
+    ODR6 = 6,
+    ODR5 = 5,
+    ODR4 = 4,
+    ODR3 = 3,
+    ODR2 = 2,
+    ODR1 = 1,
+    ODR0 = 0,
+}
+
+GPIO_ODR_Set :: bit_set[GPIO_ODR_Flag; u32]
+
+GPIO_BSRR_Flag :: enum u32 {
+    BR15 = 31,
+    BR14 = 30,
+    BR13 = 29,
+    BR12 = 28,
+    BR11 = 27,
+    BR10 = 26,
+    BR9 = 25,
+    BR8 = 24,
+    BR7 = 23,
+    BR6 = 22,
+    BR5 = 21,
+    BR4 = 20,
+    BR3 = 19,
+    BR2 = 18,
+    BR1 = 17,
+    BR0 = 16,
+    BS15 = 15,
+    BS14 = 14,
+    BS13 = 13,
+    BS12 = 12,
+    BS11 = 11,
+    BS10 = 10,
+    BS9 = 9,
+    BS8 = 8,
+    BS7 = 7,
+    BS6 = 6,
+    BS5 = 5,
+    BS4 = 4,
+    BS3 = 3,
+    BS2 = 2,
+    BS1 = 1,
+    BS0 = 0,
+}
+
+GPIO_BSRR_Set :: bit_set[GPIO_BSRR_Flag; u32]
+
+GPIO_LCKR_Flag :: enum u32 {
+    LCKK = 16,
+    LCK15 = 15,
+    LCK14 = 14,
+    LCK13 = 13,
+    LCK12 = 12,
+    LCK11 = 11,
+    LCK10 = 10,
+    LCK9 = 9,
+    LCK8 = 8,
+    LCK7 = 7,
+    LCK6 = 6,
+    LCK5 = 5,
+    LCK4 = 4,
+    LCK3 = 3,
+    LCK2 = 2,
+    LCK1 = 1,
+    LCK0 = 0,
+}
+
+GPIO_LCKR_Set :: bit_set[GPIO_LCKR_Flag; u32]
+
+GPIO_BRR_Flag :: enum u32 {
+    BR0 = 0,
+    BR1 = 1,
+    BR2 = 2,
+    BR3 = 3,
+    BR4 = 4,
+    BR5 = 5,
+    BR6 = 6,
+    BR7 = 7,
+    BR8 = 8,
+    BR9 = 9,
+    BR10 = 10,
+    BR11 = 11,
+    BR12 = 12,
+    BR13 = 13,
+    BR14 = 14,
+    BR15 = 15,
+}
+
+GPIO_BRR_Set :: bit_set[GPIO_BRR_Flag; u32]
+
 GPIO_Reg :: struct {
     MODER: u32,  // 0x00 RW — GPIO port mode register
-    OTYPER: u32,  // 0x04 RW — GPIO port output type register
+    OTYPER: GPIO_OTYPER_Set,  // 0x04 RW — GPIO port output type register
     OSPEEDR: u32,  // 0x08 RW — GPIO port output speed register
     PUPDR: u32,  // 0x0C RW — GPIO port pull-up/pull-down register
-    IDR: u32,  // 0x10 RO — GPIO port input data register
-    ODR: u32,  // 0x14 RW — GPIO port output data register
-    BSRR: u32,  // 0x18 WO — GPIO port bit set/reset register
-    LCKR: u32,  // 0x1C RW — GPIO port configuration lock register
+    IDR: GPIO_IDR_Set,  // 0x10 RO — GPIO port input data register
+    ODR: GPIO_ODR_Set,  // 0x14 RW — GPIO port output data register
+    BSRR: GPIO_BSRR_Set,  // 0x18 WO — GPIO port bit set/reset register
+    LCKR: GPIO_LCKR_Set,  // 0x1C RW — GPIO port configuration lock register
     AFRL: u32,  // 0x20 RW — GPIO alternate function low register
     AFRH: u32,  // 0x24 RW — GPIO alternate function high register
-    BRR: u32,  // 0x28 WO — Port bit reset register
+    BRR: GPIO_BRR_Set,  // 0x28 WO — Port bit reset register
 }
+
+#assert(size_of(GPIO_Reg) == 44)
 
 gpiof := (^GPIO_Reg)(rawptr(uintptr(GPIOF_BASE)))
 
@@ -754,6 +900,8 @@ SPI_Reg :: struct {
     I2SPR: u32,  // 0x20 RW — I2S prescaler register
 }
 
+#assert(size_of(SPI_Reg) == 36)
+
 spi1 := (^SPI_Reg)(rawptr(uintptr(SPI1_BASE)))
 
 SPI_CR1_BIDIMODE_POS :: 15
@@ -962,10 +1110,29 @@ spi2 := (^SPI_Reg)(rawptr(uintptr(SPI2_BASE)))
 
 PWR_BASE :: 0x40007000
 
+PWR_CSR_Flag :: enum u32 {
+    WUF = 0,
+    SBF = 1,
+    PVDO = 2,
+    VREFINTRDY = 3,
+    EWUP1 = 8,
+    EWUP2 = 9,
+    EWUP3 = 10,
+    EWUP4 = 11,
+    EWUP5 = 12,
+    EWUP6 = 13,
+    EWUP7 = 14,
+    EWUP8 = 15,
+}
+
+PWR_CSR_Set :: bit_set[PWR_CSR_Flag; u32]
+
 PWR_Reg :: struct {
     CR: u32,  // 0x00 RW — power control register
-    CSR: u32,  // 0x04 RW — power control/status register
+    CSR: PWR_CSR_Set,  // 0x04 RW — power control/status register
 }
+
+#assert(size_of(PWR_Reg) == 8)
 
 pwr := (^PWR_Reg)(rawptr(uintptr(PWR_BASE)))
 
@@ -1048,6 +1215,20 @@ PWR_CSR_EWUP8_BIT :: 1 << 15
 
 I2C1_BASE :: 0x40005400
 
+I2C_ICR_Flag :: enum u32 {
+    ALERTCF = 13,
+    TIMOUTCF = 12,
+    PECCF = 11,
+    OVRCF = 10,
+    ARLOCF = 9,
+    BERRCF = 8,
+    STOPCF = 5,
+    NACKCF = 4,
+    ADDRCF = 3,
+}
+
+I2C_ICR_Set :: bit_set[I2C_ICR_Flag; u32]
+
 I2C_Reg :: struct {
     CR1: u32,  // 0x00 RW — Control register 1
     CR2: u32,  // 0x04 RW — Control register 2
@@ -1056,11 +1237,13 @@ I2C_Reg :: struct {
     TIMINGR: u32,  // 0x10 RW — Timing register
     TIMEOUTR: u32,  // 0x14 RW — Status register 1
     ISR: u32,  // 0x18 RW — Interrupt and Status register
-    ICR: u32,  // 0x1C WO — Interrupt clear register
+    ICR: I2C_ICR_Set,  // 0x1C WO — Interrupt clear register
     PECR: u32,  // 0x20 RO — PEC register
     RXDR: u32,  // 0x24 RO — Receive data register
     TXDR: u32,  // 0x28 RW — Transmit data register
 }
+
+#assert(size_of(I2C_Reg) == 44)
 
 i2c1 := (^I2C_Reg)(rawptr(uintptr(I2C1_BASE)))
 
@@ -1379,13 +1562,23 @@ i2c2 := (^I2C_Reg)(rawptr(uintptr(I2C2_BASE)))
 
 IWDG_BASE :: 0x40003000
 
+IWDG_SR_Flag :: enum u32 {
+    PVU = 0,
+    RVU = 1,
+    WVU = 2,
+}
+
+IWDG_SR_Set :: bit_set[IWDG_SR_Flag; u32]
+
 IWDG_Reg :: struct {
     KR: u32,  // 0x00 WO — Key register
     PR: u32,  // 0x04 RW — Prescaler register
     RLR: u32,  // 0x08 RW — Reload register
-    SR: u32,  // 0x0C RO — Status register
+    SR: IWDG_SR_Set,  // 0x0C RO — Status register
     WINR: u32,  // 0x10 RW — Window register
 }
+
+#assert(size_of(IWDG_Reg) == 20)
 
 iwdg := (^IWDG_Reg)(rawptr(uintptr(IWDG_BASE)))
 
@@ -1417,11 +1610,19 @@ IWDG_WINR_WIN_MSK :: 0xFFF
 
 WWDG_BASE :: 0x40002C00
 
+WWDG_SR_Flag :: enum u32 {
+    EWIF = 0,
+}
+
+WWDG_SR_Set :: bit_set[WWDG_SR_Flag; u32]
+
 WWDG_Reg :: struct {
     CR: u32,  // 0x00 RW — Control register
     CFR: u32,  // 0x04 RW — Configuration register
-    SR: u32,  // 0x08 RW — Status register
+    SR: WWDG_SR_Set,  // 0x08 RW — Status register
 }
+
+#assert(size_of(WWDG_Reg) == 12)
 
 wwdg := (^WWDG_Reg)(rawptr(uintptr(WWDG_BASE)))
 
@@ -1450,18 +1651,85 @@ WWDG_SR_EWIF_BIT :: 1 << 0
 
 TIM1_BASE :: 0x40012C00
 
+TIM_DIER_Flag :: enum u32 {
+    TDE = 14,
+    COMDE = 13,
+    CC4DE = 12,
+    CC3DE = 11,
+    CC2DE = 10,
+    CC1DE = 9,
+    UDE = 8,
+    BIE = 7,
+    TIE = 6,
+    COMIE = 5,
+    CC4IE = 4,
+    CC3IE = 3,
+    CC2IE = 2,
+    CC1IE = 1,
+    UIE = 0,
+}
+
+TIM_DIER_Set :: bit_set[TIM_DIER_Flag; u32]
+
+TIM_SR_Flag :: enum u32 {
+    CC4OF = 12,
+    CC3OF = 11,
+    CC2OF = 10,
+    CC1OF = 9,
+    BIF = 7,
+    TIF = 6,
+    COMIF = 5,
+    CC4IF = 4,
+    CC3IF = 3,
+    CC2IF = 2,
+    CC1IF = 1,
+    UIF = 0,
+}
+
+TIM_SR_Set :: bit_set[TIM_SR_Flag; u32]
+
+TIM_EGR_Flag :: enum u32 {
+    BG = 7,
+    TG = 6,
+    COMG = 5,
+    CC4G = 4,
+    CC3G = 3,
+    CC2G = 2,
+    CC1G = 1,
+    UG = 0,
+}
+
+TIM_EGR_Set :: bit_set[TIM_EGR_Flag; u32]
+
+TIM_CCER_Flag :: enum u32 {
+    CC4P = 13,
+    CC4E = 12,
+    CC3NP = 11,
+    CC3NE = 10,
+    CC3P = 9,
+    CC3E = 8,
+    CC2NP = 7,
+    CC2NE = 6,
+    CC2P = 5,
+    CC2E = 4,
+    CC1NP = 3,
+    CC1NE = 2,
+    CC1P = 1,
+    CC1E = 0,
+}
+
+TIM_CCER_Set :: bit_set[TIM_CCER_Flag; u32]
+
 TIM_Reg :: struct {
     CR1: u32,  // 0x00 RW — control register 1
     CR2: u32,  // 0x04 RW — control register 2
     SMCR: u32,  // 0x08 RW — slave mode control register
-    DIER: u32,  // 0x0C RW — DMA/Interrupt enable register
-    SR: u32,  // 0x10 RW — status register
-    EGR: u32,  // 0x14 WO — event generation register
+    DIER: TIM_DIER_Set,  // 0x0C RW — DMA/Interrupt enable register
+    SR: TIM_SR_Set,  // 0x10 RW — status register
+    EGR: TIM_EGR_Set,  // 0x14 WO — event generation register
     CCMR1_Output: u32,  // 0x18 RW — capture/compare mode register (output mode)
-    CCMR1_Input: u32,  // 0x18 RW — capture/compare mode register 1 (input mode)
     CCMR2_Output: u32,  // 0x1C RW — capture/compare mode register (output mode)
-    CCMR2_Input: u32,  // 0x1C RW — capture/compare mode register 2 (input mode)
-    CCER: u32,  // 0x20 RW — capture/compare enable register
+    CCER: TIM_CCER_Set,  // 0x20 RW — capture/compare enable register
     CNT: u32,  // 0x24 RW — counter
     PSC: u32,  // 0x28 RW — prescaler
     ARR: u32,  // 0x2C RW — auto-reload register
@@ -1474,6 +1742,8 @@ TIM_Reg :: struct {
     DCR: u32,  // 0x48 RW — DMA control register
     DMAR: u32,  // 0x4C RW — DMA address for full transfer
 }
+
+#assert(size_of(TIM_Reg) == 80)
 
 tim1 := (^TIM_Reg)(rawptr(uintptr(TIM1_BASE)))
 
@@ -1979,14 +2249,178 @@ tim7 := (^TIM_Reg)(rawptr(uintptr(TIM7_BASE)))
 
 EXTI_BASE :: 0x40010400
 
-EXTI_Reg :: struct {
-    IMR: u32,  // 0x00 RW — Interrupt mask register (EXTI_IMR)
-    EMR: u32,  // 0x04 RW — Event mask register (EXTI_EMR)
-    RTSR: u32,  // 0x08 RW — Rising Trigger selection register (EXTI_RTSR)
-    FTSR: u32,  // 0x0C RW — Falling Trigger selection register (EXTI_FTSR)
-    SWIER: u32,  // 0x10 RW — Software interrupt event register (EXTI_SWIER)
-    PR: u32,  // 0x14 RW — Pending register (EXTI_PR)
+EXTI_IMR_Flag :: enum u32 {
+    MR0 = 0,
+    MR1 = 1,
+    MR2 = 2,
+    MR3 = 3,
+    MR4 = 4,
+    MR5 = 5,
+    MR6 = 6,
+    MR7 = 7,
+    MR8 = 8,
+    MR9 = 9,
+    MR10 = 10,
+    MR11 = 11,
+    MR12 = 12,
+    MR13 = 13,
+    MR14 = 14,
+    MR15 = 15,
+    MR16 = 16,
+    MR17 = 17,
+    MR18 = 18,
+    MR19 = 19,
+    MR20 = 20,
+    MR21 = 21,
+    MR22 = 22,
+    MR23 = 23,
+    MR24 = 24,
+    MR25 = 25,
+    MR26 = 26,
+    MR27 = 27,
 }
+
+EXTI_IMR_Set :: bit_set[EXTI_IMR_Flag; u32]
+
+EXTI_EMR_Flag :: enum u32 {
+    MR0 = 0,
+    MR1 = 1,
+    MR2 = 2,
+    MR3 = 3,
+    MR4 = 4,
+    MR5 = 5,
+    MR6 = 6,
+    MR7 = 7,
+    MR8 = 8,
+    MR9 = 9,
+    MR10 = 10,
+    MR11 = 11,
+    MR12 = 12,
+    MR13 = 13,
+    MR14 = 14,
+    MR15 = 15,
+    MR16 = 16,
+    MR17 = 17,
+    MR18 = 18,
+    MR19 = 19,
+    MR20 = 20,
+    MR21 = 21,
+    MR22 = 22,
+    MR23 = 23,
+    MR24 = 24,
+    MR25 = 25,
+    MR26 = 26,
+    MR27 = 27,
+}
+
+EXTI_EMR_Set :: bit_set[EXTI_EMR_Flag; u32]
+
+EXTI_RTSR_Flag :: enum u32 {
+    TR0 = 0,
+    TR1 = 1,
+    TR2 = 2,
+    TR3 = 3,
+    TR4 = 4,
+    TR5 = 5,
+    TR6 = 6,
+    TR7 = 7,
+    TR8 = 8,
+    TR9 = 9,
+    TR10 = 10,
+    TR11 = 11,
+    TR12 = 12,
+    TR13 = 13,
+    TR14 = 14,
+    TR15 = 15,
+    TR16 = 16,
+    TR17 = 17,
+    TR19 = 19,
+}
+
+EXTI_RTSR_Set :: bit_set[EXTI_RTSR_Flag; u32]
+
+EXTI_FTSR_Flag :: enum u32 {
+    TR0 = 0,
+    TR1 = 1,
+    TR2 = 2,
+    TR3 = 3,
+    TR4 = 4,
+    TR5 = 5,
+    TR6 = 6,
+    TR7 = 7,
+    TR8 = 8,
+    TR9 = 9,
+    TR10 = 10,
+    TR11 = 11,
+    TR12 = 12,
+    TR13 = 13,
+    TR14 = 14,
+    TR15 = 15,
+    TR16 = 16,
+    TR17 = 17,
+    TR19 = 19,
+}
+
+EXTI_FTSR_Set :: bit_set[EXTI_FTSR_Flag; u32]
+
+EXTI_SWIER_Flag :: enum u32 {
+    SWIER0 = 0,
+    SWIER1 = 1,
+    SWIER2 = 2,
+    SWIER3 = 3,
+    SWIER4 = 4,
+    SWIER5 = 5,
+    SWIER6 = 6,
+    SWIER7 = 7,
+    SWIER8 = 8,
+    SWIER9 = 9,
+    SWIER10 = 10,
+    SWIER11 = 11,
+    SWIER12 = 12,
+    SWIER13 = 13,
+    SWIER14 = 14,
+    SWIER15 = 15,
+    SWIER16 = 16,
+    SWIER17 = 17,
+    SWIER19 = 19,
+}
+
+EXTI_SWIER_Set :: bit_set[EXTI_SWIER_Flag; u32]
+
+EXTI_PR_Flag :: enum u32 {
+    PR0 = 0,
+    PR1 = 1,
+    PR2 = 2,
+    PR3 = 3,
+    PR4 = 4,
+    PR5 = 5,
+    PR6 = 6,
+    PR7 = 7,
+    PR8 = 8,
+    PR9 = 9,
+    PR10 = 10,
+    PR11 = 11,
+    PR12 = 12,
+    PR13 = 13,
+    PR14 = 14,
+    PR15 = 15,
+    PR16 = 16,
+    PR17 = 17,
+    PR19 = 19,
+}
+
+EXTI_PR_Set :: bit_set[EXTI_PR_Flag; u32]
+
+EXTI_Reg :: struct {
+    IMR: EXTI_IMR_Set,  // 0x00 RW — Interrupt mask register (EXTI_IMR)
+    EMR: EXTI_EMR_Set,  // 0x04 RW — Event mask register (EXTI_EMR)
+    RTSR: EXTI_RTSR_Set,  // 0x08 RW — Rising Trigger selection register (EXTI_RTSR)
+    FTSR: EXTI_FTSR_Set,  // 0x0C RW — Falling Trigger selection register (EXTI_FTSR)
+    SWIER: EXTI_SWIER_Set,  // 0x10 RW — Software interrupt event register (EXTI_SWIER)
+    PR: EXTI_PR_Set,  // 0x14 RW — Pending register (EXTI_PR)
+}
+
+#assert(size_of(EXTI_Reg) == 24)
 
 exti := (^EXTI_Reg)(rawptr(uintptr(EXTI_BASE)))
 
@@ -2541,6 +2975,8 @@ NVIC_Reg :: struct {
     IPR7: u32,  // 0x31C RW — Interrupt Priority Register 7
 }
 
+#assert(size_of(NVIC_Reg) == 800)
+
 nvic := (^NVIC_Reg)(rawptr(uintptr(NVIC_BASE)))
 
 NVIC_ISER_SETENA_POS :: 0
@@ -2655,9 +3091,75 @@ NVIC_IPR7_PRI_283_MSK :: 0xC0000000
 
 DMA1_BASE :: 0x40020000
 
+DMA_ISR_Flag :: enum u32 {
+    GIF1 = 0,
+    TCIF1 = 1,
+    HTIF1 = 2,
+    TEIF1 = 3,
+    GIF2 = 4,
+    TCIF2 = 5,
+    HTIF2 = 6,
+    TEIF2 = 7,
+    GIF3 = 8,
+    TCIF3 = 9,
+    HTIF3 = 10,
+    TEIF3 = 11,
+    GIF4 = 12,
+    TCIF4 = 13,
+    HTIF4 = 14,
+    TEIF4 = 15,
+    GIF5 = 16,
+    TCIF5 = 17,
+    HTIF5 = 18,
+    TEIF5 = 19,
+    GIF6 = 20,
+    TCIF6 = 21,
+    HTIF6 = 22,
+    TEIF6 = 23,
+    GIF7 = 24,
+    TCIF7 = 25,
+    HTIF7 = 26,
+    TEIF7 = 27,
+}
+
+DMA_ISR_Set :: bit_set[DMA_ISR_Flag; u32]
+
+DMA_IFCR_Flag :: enum u32 {
+    CGIF1 = 0,
+    CTCIF1 = 1,
+    CHTIF1 = 2,
+    CTEIF1 = 3,
+    CGIF2 = 4,
+    CTCIF2 = 5,
+    CHTIF2 = 6,
+    CTEIF2 = 7,
+    CGIF3 = 8,
+    CTCIF3 = 9,
+    CHTIF3 = 10,
+    CTEIF3 = 11,
+    CGIF4 = 12,
+    CTCIF4 = 13,
+    CHTIF4 = 14,
+    CTEIF4 = 15,
+    CGIF5 = 16,
+    CTCIF5 = 17,
+    CHTIF5 = 18,
+    CTEIF5 = 19,
+    CGIF6 = 20,
+    CTCIF6 = 21,
+    CHTIF6 = 22,
+    CTEIF6 = 23,
+    CGIF7 = 24,
+    CTCIF7 = 25,
+    CHTIF7 = 26,
+    CTEIF7 = 27,
+}
+
+DMA_IFCR_Set :: bit_set[DMA_IFCR_Flag; u32]
+
 DMA_Reg :: struct {
-    ISR: u32,  // 0x00 RO — DMA interrupt status register (DMA_ISR)
-    IFCR: u32,  // 0x04 WO — DMA interrupt flag clear register (DMA_IFCR)
+    ISR: DMA_ISR_Set,  // 0x00 RO — DMA interrupt status register (DMA_ISR)
+    IFCR: DMA_IFCR_Set,  // 0x04 WO — DMA interrupt flag clear register (DMA_IFCR)
     CCR1: u32,  // 0x08 RW — DMA channel configuration register (DMA_CCR)
     CNDTR1: u32,  // 0x0C RW — DMA channel 1 number of data register
     CPAR1: u32,  // 0x10 RW — DMA channel 1 peripheral address register
@@ -2693,6 +3195,8 @@ DMA_Reg :: struct {
     CPAR7: u32,  // 0x88 RW — DMA channel 7 peripheral address register
     CMAR7: u32,  // 0x8C RW — DMA channel 7 memory address register
 }
+
+#assert(size_of(DMA_Reg) == 144)
 
 dma1 := (^DMA_Reg)(rawptr(uintptr(DMA1_BASE)))
 
@@ -3308,22 +3812,170 @@ dma2 := (^DMA_Reg)(rawptr(uintptr(DMA2_BASE)))
 
 RCC_BASE :: 0x40021000
 
+RCC_CIR_Flag :: enum u32 {
+    LSIRDYF = 0,
+    LSERDYF = 1,
+    HSIRDYF = 2,
+    HSERDYF = 3,
+    PLLRDYF = 4,
+    HSI14RDYF = 5,
+    HSI48RDYF = 6,
+    CSSF = 7,
+    LSIRDYIE = 8,
+    LSERDYIE = 9,
+    HSIRDYIE = 10,
+    HSERDYIE = 11,
+    PLLRDYIE = 12,
+    HSI14RDYE = 13,
+    HSI48RDYIE = 14,
+    LSIRDYC = 16,
+    LSERDYC = 17,
+    HSIRDYC = 18,
+    HSERDYC = 19,
+    PLLRDYC = 20,
+    HSI14RDYC = 21,
+    HSI48RDYC = 22,
+    CSSC = 23,
+}
+
+RCC_CIR_Set :: bit_set[RCC_CIR_Flag; u32]
+
+RCC_APB2RSTR_Flag :: enum u32 {
+    SYSCFGRST = 0,
+    ADCRST = 9,
+    TIM1RST = 11,
+    SPI1RST = 12,
+    USART1RST = 14,
+    TIM15RST = 16,
+    TIM16RST = 17,
+    TIM17RST = 18,
+    DBGMCURST = 22,
+}
+
+RCC_APB2RSTR_Set :: bit_set[RCC_APB2RSTR_Flag; u32]
+
+RCC_APB1RSTR_Flag :: enum u32 {
+    TIM2RST = 0,
+    TIM3RST = 1,
+    TIM6RST = 4,
+    TIM7RST = 5,
+    TIM14RST = 8,
+    WWDGRST = 11,
+    SPI2RST = 14,
+    USART2RST = 17,
+    USART3RST = 18,
+    USART4RST = 19,
+    USART5RST = 20,
+    I2C1RST = 21,
+    I2C2RST = 22,
+    USBRST = 23,
+    CANRST = 25,
+    CRSRST = 27,
+    PWRRST = 28,
+    DACRST = 29,
+    CECRST = 30,
+}
+
+RCC_APB1RSTR_Set :: bit_set[RCC_APB1RSTR_Flag; u32]
+
+RCC_AHBENR_Flag :: enum u32 {
+    DMA1EN = 0,
+    DMA2EN = 1,
+    SRAMEN = 2,
+    FLITFEN = 4,
+    CRCEN = 6,
+    IOPAEN = 17,
+    IOPBEN = 18,
+    IOPCEN = 19,
+    IOPDEN = 20,
+    IOPFEN = 22,
+    TSCEN = 24,
+}
+
+RCC_AHBENR_Set :: bit_set[RCC_AHBENR_Flag; u32]
+
+RCC_APB2ENR_Flag :: enum u32 {
+    SYSCFGEN = 0,
+    ADCEN = 9,
+    TIM1EN = 11,
+    SPI1EN = 12,
+    USART1EN = 14,
+    TIM15EN = 16,
+    TIM16EN = 17,
+    TIM17EN = 18,
+    DBGMCUEN = 22,
+}
+
+RCC_APB2ENR_Set :: bit_set[RCC_APB2ENR_Flag; u32]
+
+RCC_APB1ENR_Flag :: enum u32 {
+    TIM2EN = 0,
+    TIM3EN = 1,
+    TIM6EN = 4,
+    TIM7EN = 5,
+    TIM14EN = 8,
+    WWDGEN = 11,
+    SPI2EN = 14,
+    USART2EN = 17,
+    USART3EN = 18,
+    USART4EN = 19,
+    USART5EN = 20,
+    I2C1EN = 21,
+    I2C2EN = 22,
+    USBRST = 23,
+    CANEN = 25,
+    CRSEN = 27,
+    PWREN = 28,
+    DACEN = 29,
+    CECEN = 30,
+}
+
+RCC_APB1ENR_Set :: bit_set[RCC_APB1ENR_Flag; u32]
+
+RCC_CSR_Flag :: enum u32 {
+    LSION = 0,
+    LSIRDY = 1,
+    RMVF = 24,
+    OBLRSTF = 25,
+    PINRSTF = 26,
+    PORRSTF = 27,
+    SFTRSTF = 28,
+    IWDGRSTF = 29,
+    WWDGRSTF = 30,
+    LPWRRSTF = 31,
+}
+
+RCC_CSR_Set :: bit_set[RCC_CSR_Flag; u32]
+
+RCC_AHBRSTR_Flag :: enum u32 {
+    IOPARST = 17,
+    IOPBRST = 18,
+    IOPCRST = 19,
+    IOPDRST = 20,
+    IOPFRST = 22,
+    TSCRST = 24,
+}
+
+RCC_AHBRSTR_Set :: bit_set[RCC_AHBRSTR_Flag; u32]
+
 RCC_Reg :: struct {
     CR: u32,  // 0x00 RW — Clock control register
     CFGR: u32,  // 0x04 RW — Clock configuration register (RCC_CFGR)
-    CIR: u32,  // 0x08 RW — Clock interrupt register (RCC_CIR)
-    APB2RSTR: u32,  // 0x0C RW — APB2 peripheral reset register (RCC_APB2RSTR)
-    APB1RSTR: u32,  // 0x10 RW — APB1 peripheral reset register (RCC_APB1RSTR)
-    AHBENR: u32,  // 0x14 RW — AHB Peripheral Clock enable register (RCC_AHBENR)
-    APB2ENR: u32,  // 0x18 RW — APB2 peripheral clock enable register (RCC_APB2ENR)
-    APB1ENR: u32,  // 0x1C RW — APB1 peripheral clock enable register (RCC_APB1ENR)
+    CIR: RCC_CIR_Set,  // 0x08 RW — Clock interrupt register (RCC_CIR)
+    APB2RSTR: RCC_APB2RSTR_Set,  // 0x0C RW — APB2 peripheral reset register (RCC_APB2RSTR)
+    APB1RSTR: RCC_APB1RSTR_Set,  // 0x10 RW — APB1 peripheral reset register (RCC_APB1RSTR)
+    AHBENR: RCC_AHBENR_Set,  // 0x14 RW — AHB Peripheral Clock enable register (RCC_AHBENR)
+    APB2ENR: RCC_APB2ENR_Set,  // 0x18 RW — APB2 peripheral clock enable register (RCC_APB2ENR)
+    APB1ENR: RCC_APB1ENR_Set,  // 0x1C RW — APB1 peripheral clock enable register (RCC_APB1ENR)
     BDCR: u32,  // 0x20 RW — Backup domain control register (RCC_BDCR)
-    CSR: u32,  // 0x24 RW — Control/status register (RCC_CSR)
-    AHBRSTR: u32,  // 0x28 RW — AHB peripheral reset register
+    CSR: RCC_CSR_Set,  // 0x24 RW — Control/status register (RCC_CSR)
+    AHBRSTR: RCC_AHBRSTR_Set,  // 0x28 RW — AHB peripheral reset register
     CFGR2: u32,  // 0x2C RW — Clock configuration register 2
     CFGR3: u32,  // 0x30 RW — Clock configuration register 3
     CR2: u32,  // 0x34 RW — Clock control register 2
 }
+
+#assert(size_of(RCC_Reg) == 56)
 
 rcc := (^RCC_Reg)(rawptr(uintptr(RCC_BASE)))
 
@@ -3910,6 +4562,15 @@ RCC_CR2_HSI48CAL_BIT :: 1 << 24
 
 SYSCFG_COMP_BASE :: 0x40010000
 
+SYSCFG_SYSCFG_CFGR2_Flag :: enum u32 {
+    SRAM_PEF = 8,
+    PVD_LOCK = 2,
+    SRAM_PARITY_LOCK = 1,
+    LOCUP_LOCK = 0,
+}
+
+SYSCFG_SYSCFG_CFGR2_Set :: bit_set[SYSCFG_SYSCFG_CFGR2_Flag; u32]
+
 SYSCFG_Reg :: struct {
     SYSCFG_CFGR1: u32,  // 0x00 RW — configuration register 1
     _reserved_0008: [4]u8,  // padding
@@ -3917,9 +4578,11 @@ SYSCFG_Reg :: struct {
     SYSCFG_EXTICR2: u32,  // 0x0C RW — external interrupt configuration register 2
     SYSCFG_EXTICR3: u32,  // 0x10 RW — external interrupt configuration register 3
     SYSCFG_EXTICR4: u32,  // 0x14 RW — external interrupt configuration register 4
-    SYSCFG_CFGR2: u32,  // 0x18 RW — configuration register 2
+    SYSCFG_CFGR2: SYSCFG_SYSCFG_CFGR2_Set,  // 0x18 RW — configuration register 2
     COMP_CSR: u32,  // 0x1C RW — control and status register
 }
+
+#assert(size_of(SYSCFG_Reg) == 32)
 
 syscfg_comp := (^SYSCFG_Reg)(rawptr(uintptr(SYSCFG_COMP_BASE)))
 
@@ -4130,22 +4793,95 @@ SYSCFG_COMP_CSR_COMP2LOCK_BIT :: 1 << 31
 
 ADC_BASE :: 0x40012400
 
+ADC_ISR_Flag :: enum u32 {
+    AWD = 7,
+    OVR = 4,
+    EOS = 3,
+    EOC = 2,
+    EOSMP = 1,
+    ADRDY = 0,
+}
+
+ADC_ISR_Set :: bit_set[ADC_ISR_Flag; u32]
+
+ADC_IER_Flag :: enum u32 {
+    AWDIE = 7,
+    OVRIE = 4,
+    EOSIE = 3,
+    EOCIE = 2,
+    EOSMPIE = 1,
+    ADRDYIE = 0,
+}
+
+ADC_IER_Set :: bit_set[ADC_IER_Flag; u32]
+
+ADC_CR_Flag :: enum u32 {
+    ADCAL = 31,
+    ADSTP = 4,
+    ADSTART = 2,
+    ADDIS = 1,
+    ADEN = 0,
+}
+
+ADC_CR_Set :: bit_set[ADC_CR_Flag; u32]
+
+ADC_CFGR2_Flag :: enum u32 {
+    JITOFF_D4 = 31,
+    JITOFF_D2 = 30,
+}
+
+ADC_CFGR2_Set :: bit_set[ADC_CFGR2_Flag; u32]
+
+ADC_CHSELR_Flag :: enum u32 {
+    CHSEL18 = 18,
+    CHSEL17 = 17,
+    CHSEL16 = 16,
+    CHSEL15 = 15,
+    CHSEL14 = 14,
+    CHSEL13 = 13,
+    CHSEL12 = 12,
+    CHSEL11 = 11,
+    CHSEL10 = 10,
+    CHSEL9 = 9,
+    CHSEL8 = 8,
+    CHSEL7 = 7,
+    CHSEL6 = 6,
+    CHSEL5 = 5,
+    CHSEL4 = 4,
+    CHSEL3 = 3,
+    CHSEL2 = 2,
+    CHSEL1 = 1,
+    CHSEL0 = 0,
+}
+
+ADC_CHSELR_Set :: bit_set[ADC_CHSELR_Flag; u32]
+
+ADC_CCR_Flag :: enum u32 {
+    VBATEN = 24,
+    TSEN = 23,
+    VREFEN = 22,
+}
+
+ADC_CCR_Set :: bit_set[ADC_CCR_Flag; u32]
+
 ADC_Reg :: struct {
-    ISR: u32,  // 0x00 RW — interrupt and status register
-    IER: u32,  // 0x04 RW — interrupt enable register
-    CR: u32,  // 0x08 RW — control register
+    ISR: ADC_ISR_Set,  // 0x00 RW — interrupt and status register
+    IER: ADC_IER_Set,  // 0x04 RW — interrupt enable register
+    CR: ADC_CR_Set,  // 0x08 RW — control register
     CFGR1: u32,  // 0x0C RW — configuration register 1
-    CFGR2: u32,  // 0x10 RW — configuration register 2
+    CFGR2: ADC_CFGR2_Set,  // 0x10 RW — configuration register 2
     SMPR: u32,  // 0x14 RW — sampling time register
     _reserved_0020: [8]u8,  // padding
     TR: u32,  // 0x20 RW — watchdog threshold register
     _reserved_0028: [4]u8,  // padding
-    CHSELR: u32,  // 0x28 RW — channel selection register
+    CHSELR: ADC_CHSELR_Set,  // 0x28 RW — channel selection register
     _reserved_0040: [20]u8,  // padding
     DR: u32,  // 0x40 RO — data register
     _reserved_0308: [708]u8,  // padding
-    CCR: u32,  // 0x308 RW — common configuration register
+    CCR: ADC_CCR_Set,  // 0x308 RW — common configuration register
 }
+
+#assert(size_of(ADC_Reg) == 780)
 
 adc := (^ADC_Reg)(rawptr(uintptr(ADC_BASE)))
 
@@ -4385,6 +5121,60 @@ ADC_CCR_VREFEN_BIT :: 1 << 22
 
 USART1_BASE :: 0x40013800
 
+USART_RQR_Flag :: enum u32 {
+    TXFRQ = 4,
+    RXFRQ = 3,
+    MMRQ = 2,
+    SBKRQ = 1,
+    ABRRQ = 0,
+}
+
+USART_RQR_Set :: bit_set[USART_RQR_Flag; u32]
+
+USART_ISR_Flag :: enum u32 {
+    REACK = 22,
+    TEACK = 21,
+    WUF = 20,
+    RWU = 19,
+    SBKF = 18,
+    CMF = 17,
+    BUSY = 16,
+    ABRF = 15,
+    ABRE = 14,
+    EOBF = 12,
+    RTOF = 11,
+    CTS = 10,
+    CTSIF = 9,
+    LBDF = 8,
+    TXE = 7,
+    TC = 6,
+    RXNE = 5,
+    IDLE = 4,
+    ORE = 3,
+    NF = 2,
+    FE = 1,
+    PE = 0,
+}
+
+USART_ISR_Set :: bit_set[USART_ISR_Flag; u32]
+
+USART_ICR_Flag :: enum u32 {
+    WUCF = 20,
+    CMCF = 17,
+    EOBCF = 12,
+    RTOCF = 11,
+    CTSCF = 9,
+    LBDCF = 8,
+    TCCF = 6,
+    IDLECF = 4,
+    ORECF = 3,
+    NCF = 2,
+    FECF = 1,
+    PECF = 0,
+}
+
+USART_ICR_Set :: bit_set[USART_ICR_Flag; u32]
+
 USART_Reg :: struct {
     CR1: u32,  // 0x00 RW — Control register 1
     CR2: u32,  // 0x04 RW — Control register 2
@@ -4392,12 +5182,14 @@ USART_Reg :: struct {
     BRR: u32,  // 0x0C RW — Baud rate register
     GTPR: u32,  // 0x10 RW — Guard time and prescaler register
     RTOR: u32,  // 0x14 RW — Receiver timeout register
-    RQR: u32,  // 0x18 RW — Request register
-    ISR: u32,  // 0x1C RO — Interrupt & status register
-    ICR: u32,  // 0x20 RW — Interrupt flag clear register
+    RQR: USART_RQR_Set,  // 0x18 RW — Request register
+    ISR: USART_ISR_Set,  // 0x1C RO — Interrupt & status register
+    ICR: USART_ICR_Set,  // 0x20 RW — Interrupt flag clear register
     RDR: u32,  // 0x24 RO — Receive data register
     TDR: u32,  // 0x28 RW — Transmit data register
 }
+
+#assert(size_of(USART_Reg) == 44)
 
 usart1 := (^USART_Reg)(rawptr(uintptr(USART1_BASE)))
 
@@ -4855,11 +5647,31 @@ usart5 := (^USART_Reg)(rawptr(uintptr(USART5_BASE)))
 
 RTC_BASE :: 0x40002800
 
+RTC_ISR_Flag :: enum u32 {
+    ALRAWF = 0,
+    WUTWF = 2,
+    SHPF = 3,
+    INITS = 4,
+    RSF = 5,
+    INITF = 6,
+    INIT = 7,
+    ALRAF = 8,
+    WUTF = 10,
+    TSF = 11,
+    TSOVF = 12,
+    TAMP1F = 13,
+    TAMP2F = 14,
+    TAMP3F = 15,
+    RECALPF = 16,
+}
+
+RTC_ISR_Set :: bit_set[RTC_ISR_Flag; u32]
+
 RTC_Reg :: struct {
     TR: u32,  // 0x00 RW — time register
     DR: u32,  // 0x04 RW — date register
     CR: u32,  // 0x08 RW — control register
-    ISR: u32,  // 0x0C RW — initialization and status register
+    ISR: RTC_ISR_Set,  // 0x0C RW — initialization and status register
     PRER: u32,  // 0x10 RW — prescaler register
     _reserved_001C: [8]u8,  // padding
     ALRMAR: u32,  // 0x1C RW — alarm A register
@@ -4879,8 +5691,9 @@ RTC_Reg :: struct {
     BKP2R: u32,  // 0x58 RW — backup register
     BKP3R: u32,  // 0x5C RW — backup register
     BKP4R: u32,  // 0x60 RW — backup register
-    WUTR: u32,  // 0x14 RW — wakeup timer register
 }
+
+#assert(size_of(RTC_Reg) == 100)
 
 rtc := (^RTC_Reg)(rawptr(uintptr(RTC_BASE)))
 
@@ -5296,20 +6109,178 @@ tim17 := (^TIM_Reg)(rawptr(uintptr(TIM17_BASE)))
 
 TSC_BASE :: 0x40024000
 
+TSC_IER_Flag :: enum u32 {
+    MCEIE = 1,
+    EOAIE = 0,
+}
+
+TSC_IER_Set :: bit_set[TSC_IER_Flag; u32]
+
+TSC_ICR_Flag :: enum u32 {
+    MCEIC = 1,
+    EOAIC = 0,
+}
+
+TSC_ICR_Set :: bit_set[TSC_ICR_Flag; u32]
+
+TSC_ISR_Flag :: enum u32 {
+    MCEF = 1,
+    EOAF = 0,
+}
+
+TSC_ISR_Set :: bit_set[TSC_ISR_Flag; u32]
+
+TSC_IOHCR_Flag :: enum u32 {
+    G6_IO4 = 23,
+    G6_IO3 = 22,
+    G6_IO2 = 21,
+    G6_IO1 = 20,
+    G5_IO4 = 19,
+    G5_IO3 = 18,
+    G5_IO2 = 17,
+    G5_IO1 = 16,
+    G4_IO4 = 15,
+    G4_IO3 = 14,
+    G4_IO2 = 13,
+    G4_IO1 = 12,
+    G3_IO4 = 11,
+    G3_IO3 = 10,
+    G3_IO2 = 9,
+    G3_IO1 = 8,
+    G2_IO4 = 7,
+    G2_IO3 = 6,
+    G2_IO2 = 5,
+    G2_IO1 = 4,
+    G1_IO4 = 3,
+    G1_IO3 = 2,
+    G1_IO2 = 1,
+    G1_IO1 = 0,
+}
+
+TSC_IOHCR_Set :: bit_set[TSC_IOHCR_Flag; u32]
+
+TSC_IOASCR_Flag :: enum u32 {
+    G6_IO4 = 23,
+    G6_IO3 = 22,
+    G6_IO2 = 21,
+    G6_IO1 = 20,
+    G5_IO4 = 19,
+    G5_IO3 = 18,
+    G5_IO2 = 17,
+    G5_IO1 = 16,
+    G4_IO4 = 15,
+    G4_IO3 = 14,
+    G4_IO2 = 13,
+    G4_IO1 = 12,
+    G3_IO4 = 11,
+    G3_IO3 = 10,
+    G3_IO2 = 9,
+    G3_IO1 = 8,
+    G2_IO4 = 7,
+    G2_IO3 = 6,
+    G2_IO2 = 5,
+    G2_IO1 = 4,
+    G1_IO4 = 3,
+    G1_IO3 = 2,
+    G1_IO2 = 1,
+    G1_IO1 = 0,
+}
+
+TSC_IOASCR_Set :: bit_set[TSC_IOASCR_Flag; u32]
+
+TSC_IOSCR_Flag :: enum u32 {
+    G6_IO4 = 23,
+    G6_IO3 = 22,
+    G6_IO2 = 21,
+    G6_IO1 = 20,
+    G5_IO4 = 19,
+    G5_IO3 = 18,
+    G5_IO2 = 17,
+    G5_IO1 = 16,
+    G4_IO4 = 15,
+    G4_IO3 = 14,
+    G4_IO2 = 13,
+    G4_IO1 = 12,
+    G3_IO4 = 11,
+    G3_IO3 = 10,
+    G3_IO2 = 9,
+    G3_IO1 = 8,
+    G2_IO4 = 7,
+    G2_IO3 = 6,
+    G2_IO2 = 5,
+    G2_IO1 = 4,
+    G1_IO4 = 3,
+    G1_IO3 = 2,
+    G1_IO2 = 1,
+    G1_IO1 = 0,
+}
+
+TSC_IOSCR_Set :: bit_set[TSC_IOSCR_Flag; u32]
+
+TSC_IOCCR_Flag :: enum u32 {
+    G6_IO4 = 23,
+    G6_IO3 = 22,
+    G6_IO2 = 21,
+    G6_IO1 = 20,
+    G5_IO4 = 19,
+    G5_IO3 = 18,
+    G5_IO2 = 17,
+    G5_IO1 = 16,
+    G4_IO4 = 15,
+    G4_IO3 = 14,
+    G4_IO2 = 13,
+    G4_IO1 = 12,
+    G3_IO4 = 11,
+    G3_IO3 = 10,
+    G3_IO2 = 9,
+    G3_IO1 = 8,
+    G2_IO4 = 7,
+    G2_IO3 = 6,
+    G2_IO2 = 5,
+    G2_IO1 = 4,
+    G1_IO4 = 3,
+    G1_IO3 = 2,
+    G1_IO2 = 1,
+    G1_IO1 = 0,
+}
+
+TSC_IOCCR_Set :: bit_set[TSC_IOCCR_Flag; u32]
+
+TSC_IOGCSR_Flag :: enum u32 {
+    G8S = 23,
+    G7S = 22,
+    G6S = 21,
+    G5S = 20,
+    G4S = 19,
+    G3S = 18,
+    G2S = 17,
+    G1S = 16,
+    G8E = 7,
+    G7E = 6,
+    G6E = 5,
+    G5E = 4,
+    G4E = 3,
+    G3E = 2,
+    G2E = 1,
+    G1E = 0,
+}
+
+TSC_IOGCSR_Set :: bit_set[TSC_IOGCSR_Flag; u32]
+
 TSC_Reg :: struct {
     CR: u32,  // 0x00 RW — control register
-    IER: u32,  // 0x04 RW — interrupt enable register
-    ICR: u32,  // 0x08 RW — interrupt clear register
-    ISR: u32,  // 0x0C RW — interrupt status register
-    IOHCR: u32,  // 0x10 RW — I/O hysteresis control register
+    IER: TSC_IER_Set,  // 0x04 RW — interrupt enable register
+    ICR: TSC_ICR_Set,  // 0x08 RW — interrupt clear register
+    ISR: TSC_ISR_Set,  // 0x0C RW — interrupt status register
+    IOHCR: TSC_IOHCR_Set,  // 0x10 RW — I/O hysteresis control register
     _reserved_0018: [4]u8,  // padding
-    IOASCR: u32,  // 0x18 RW — I/O analog switch control register
+    IOASCR: TSC_IOASCR_Set,  // 0x18 RW — I/O analog switch control register
     _reserved_0020: [4]u8,  // padding
-    IOSCR: u32,  // 0x20 RW — I/O sampling control register
+    IOSCR: TSC_IOSCR_Set,  // 0x20 RW — I/O sampling control register
     _reserved_0028: [4]u8,  // padding
-    IOCCR: u32,  // 0x28 RW — I/O channel control register
+    IOCCR: TSC_IOCCR_Set,  // 0x28 RW — I/O channel control register
     _reserved_0030: [4]u8,  // padding
-    IOGCSR: u32,  // 0x30 RW — I/O group control status register
+    IOGCSR: TSC_IOGCSR_Set,  // 0x30 RW — I/O group control status register
     IOG1CR: u32,  // 0x34 RO — I/O group x counter register
     IOG2CR: u32,  // 0x38 RO — I/O group x counter register
     IOG3CR: u32,  // 0x3C RO — I/O group x counter register
@@ -5317,6 +6288,8 @@ TSC_Reg :: struct {
     IOG5CR: u32,  // 0x44 RO — I/O group x counter register
     IOG6CR: u32,  // 0x48 RO — I/O group x counter register
 }
+
+#assert(size_of(TSC_Reg) == 76)
 
 tsc := (^TSC_Reg)(rawptr(uintptr(TSC_BASE)))
 
@@ -5857,14 +6830,60 @@ TSC_IOG6CR_CNT_MSK :: 0x3FFF
 
 CEC_BASE :: 0x40007800
 
+CEC_CR_Flag :: enum u32 {
+    TXEOM = 2,
+    TXSOM = 1,
+    CECEN = 0,
+}
+
+CEC_CR_Set :: bit_set[CEC_CR_Flag; u32]
+
+CEC_ISR_Flag :: enum u32 {
+    TXACKE = 12,
+    TXERR = 11,
+    TXUDR = 10,
+    TXEND = 9,
+    TXBR = 8,
+    ARBLST = 7,
+    RXACKE = 6,
+    LBPE = 5,
+    SBPE = 4,
+    BRE = 3,
+    RXOVR = 2,
+    RXEND = 1,
+    RXBR = 0,
+}
+
+CEC_ISR_Set :: bit_set[CEC_ISR_Flag; u32]
+
+CEC_IER_Flag :: enum u32 {
+    TXACKIE = 12,
+    TXERRIE = 11,
+    TXUDRIE = 10,
+    TXENDIE = 9,
+    TXBRIE = 8,
+    ARBLSTIE = 7,
+    RXACKIE = 6,
+    LBPEIE = 5,
+    SBPEIE = 4,
+    BREIE = 3,
+    RXOVRIE = 2,
+    RXENDIE = 1,
+    RXBRIE = 0,
+}
+
+CEC_IER_Set :: bit_set[CEC_IER_Flag; u32]
+
 CEC_Reg :: struct {
-    CR: u32,  // 0x00 RW — control register
+    CR: CEC_CR_Set,  // 0x00 RW — control register
     CFGR: u32,  // 0x04 RW — configuration register
     TXDR: u32,  // 0x08 WO — Tx data register
     RXDR: u32,  // 0x0C RO — Rx Data Register
-    ISR: u32,  // 0x10 RW — Interrupt and Status Register
-    IER: u32,  // 0x14 RW — interrupt enable register
+    ISR: CEC_ISR_Set,  // 0x10 RW — Interrupt and Status Register
+    IER: CEC_IER_Set,  // 0x14 RW — interrupt enable register
 }
+
+#assert(size_of(CEC_Reg) == 24)
 
 cec := (^CEC_Reg)(rawptr(uintptr(CEC_BASE)))
 
@@ -6020,17 +7039,44 @@ CEC_IER_RXBRIE_BIT :: 1 << 0
 
 Flash_BASE :: 0x40022000
 
+Flash_SR_Flag :: enum u32 {
+    EOP = 5,
+    WRPRT = 4,
+    PGERR = 2,
+    BSY = 0,
+}
+
+Flash_SR_Set :: bit_set[Flash_SR_Flag; u32]
+
+Flash_CR_Flag :: enum u32 {
+    FORCE_OPTLOAD = 13,
+    EOPIE = 12,
+    ERRIE = 10,
+    OPTWRE = 9,
+    LOCK = 7,
+    STRT = 6,
+    OPTER = 5,
+    OPTPG = 4,
+    MER = 2,
+    PER = 1,
+    PG = 0,
+}
+
+Flash_CR_Set :: bit_set[Flash_CR_Flag; u32]
+
 Flash_Reg :: struct {
     ACR: u32,  // 0x00 RW — Flash access control register
     KEYR: u32,  // 0x04 WO — Flash key register
     OPTKEYR: u32,  // 0x08 WO — Flash option key register
-    SR: u32,  // 0x0C RW — Flash status register
-    CR: u32,  // 0x10 RW — Flash control register
+    SR: Flash_SR_Set,  // 0x0C RW — Flash status register
+    CR: Flash_CR_Set,  // 0x10 RW — Flash control register
     AR: u32,  // 0x14 WO — Flash address register
     _reserved_001C: [4]u8,  // padding
     OBR: u32,  // 0x1C RO — Option byte register
     WRPR: u32,  // 0x20 RO — Write protection register
 }
+
+#assert(size_of(Flash_Reg) == 36)
 
 flash := (^Flash_Reg)(rawptr(uintptr(Flash_BASE)))
 
@@ -6166,12 +7212,45 @@ Flash_WRPR_WRP_MSK :: 0xFFFFFFFF
 
 DBGMCU_BASE :: 0x40015800
 
+DBGMCU_CR_Flag :: enum u32 {
+    DBG_STOP = 1,
+    DBG_STANDBY = 2,
+}
+
+DBGMCU_CR_Set :: bit_set[DBGMCU_CR_Flag; u32]
+
+DBGMCU_APB1_FZ_Flag :: enum u32 {
+    DBG_TIM2_STOP = 0,
+    DBG_TIM3_STOP = 1,
+    DBG_TIM6_STOP = 4,
+    DBG_TIM7_STOP = 5,
+    DBG_TIM14_STOP = 8,
+    DBG_RTC_STOP = 10,
+    DBG_WWDG_STOP = 11,
+    DBG_IWDG_STOP = 12,
+    DBG_I2C1_SMBUS_TIMEOUT = 21,
+    DBG_CAN_STOP = 25,
+}
+
+DBGMCU_APB1_FZ_Set :: bit_set[DBGMCU_APB1_FZ_Flag; u32]
+
+DBGMCU_APB2_FZ_Flag :: enum u32 {
+    DBG_TIM1_STOP = 11,
+    DBG_TIM15_STOP = 16,
+    DBG_TIM16_STOP = 17,
+    DBG_TIM17_STOP = 18,
+}
+
+DBGMCU_APB2_FZ_Set :: bit_set[DBGMCU_APB2_FZ_Flag; u32]
+
 DBGMCU_Reg :: struct {
     IDCODE: u32,  // 0x00 RO — MCU Device ID Code Register
-    CR: u32,  // 0x04 RW — Debug MCU Configuration Register
-    APB1_FZ: u32,  // 0x08 RW — Debug MCU APB1 freeze register
-    APB2_FZ: u32,  // 0x0C RW — Debug MCU APB2 freeze register
+    CR: DBGMCU_CR_Set,  // 0x04 RW — Debug MCU Configuration Register
+    APB1_FZ: DBGMCU_APB1_FZ_Set,  // 0x08 RW — Debug MCU APB1 freeze register
+    APB2_FZ: DBGMCU_APB2_FZ_Set,  // 0x0C RW — Debug MCU APB2 freeze register
 }
+
+#assert(size_of(DBGMCU_Reg) == 16)
 
 dbgmcu := (^DBGMCU_Reg)(rawptr(uintptr(DBGMCU_BASE)))
 
@@ -6252,6 +7331,40 @@ DBGMCU_APB2_FZ_DBG_TIM17_STOP_BIT :: 1 << 18
 
 USB_BASE :: 0x40005C00
 
+USB_CNTR_Flag :: enum u32 {
+    FRES = 0,
+    PDWN = 1,
+    LPMODE = 2,
+    FSUSP = 3,
+    RESUME = 4,
+    L1RESUME = 5,
+    L1REQM = 7,
+    ESOFM = 8,
+    SOFM = 9,
+    RESETM = 10,
+    SUSPM = 11,
+    WKUPM = 12,
+    ERRM = 13,
+    PMAOVRM = 14,
+    CTRM = 15,
+}
+
+USB_CNTR_Set :: bit_set[USB_CNTR_Flag; u32]
+
+USB_BCDR_Flag :: enum u32 {
+    BCDEN = 0,
+    DCDEN = 1,
+    PDEN = 2,
+    SDEN = 3,
+    DCDET = 4,
+    PDET = 5,
+    SDET = 6,
+    PS2DET = 7,
+    DPPU = 15,
+}
+
+USB_BCDR_Set :: bit_set[USB_BCDR_Flag; u32]
+
 USB_Reg :: struct {
     EP0R: u32,  // 0x00 RW — endpoint 0 register
     EP1R: u32,  // 0x04 RW — endpoint 1 register
@@ -6262,14 +7375,16 @@ USB_Reg :: struct {
     EP6R: u32,  // 0x18 RW — endpoint 6 register
     EP7R: u32,  // 0x1C RW — endpoint 7 register
     _reserved_0040: [32]u8,  // padding
-    CNTR: u32,  // 0x40 RW — control register
+    CNTR: USB_CNTR_Set,  // 0x40 RW — control register
     ISTR: u32,  // 0x44 RW — interrupt status register
     FNR: u32,  // 0x48 RO — frame number register
     DADDR: u32,  // 0x4C RW — device address
     BTABLE: u32,  // 0x50 RW — Buffer table address
     LPMCSR: u32,  // 0x54 RW — LPM control and status register
-    BCDR: u32,  // 0x58 RW — Battery charging detector
+    BCDR: USB_BCDR_Set,  // 0x58 RW — Battery charging detector
 }
+
+#assert(size_of(USB_Reg) == 92)
 
 usb := (^USB_Reg)(rawptr(uintptr(USB_BASE)))
 
@@ -6747,12 +7862,23 @@ USB_BCDR_DPPU_BIT :: 1 << 15
 
 CRS_BASE :: 0x40006C00
 
+CRS_ICR_Flag :: enum u32 {
+    ESYNCC = 3,
+    ERRC = 2,
+    SYNCWARNC = 1,
+    SYNCOKC = 0,
+}
+
+CRS_ICR_Set :: bit_set[CRS_ICR_Flag; u32]
+
 CRS_Reg :: struct {
     CR: u32,  // 0x00 RW — control register
     CFGR: u32,  // 0x04 RW — configuration register
     ISR: u32,  // 0x08 RO — interrupt and status register
-    ICR: u32,  // 0x0C RW — interrupt flag clear register
+    ICR: CRS_ICR_Set,  // 0x0C RW — interrupt flag clear register
 }
+
+#assert(size_of(CRS_Reg) == 16)
 
 crs := (^CRS_Reg)(rawptr(uintptr(CRS_BASE)))
 
@@ -6858,13 +7984,2265 @@ CRS_ICR_SYNCOKC_BIT :: 1 << 0
 
 CAN_BASE :: 0x40006400
 
+CAN_CAN_MCR_Flag :: enum u32 {
+    DBF = 16,
+    RESET = 15,
+    TTCM = 7,
+    ABOM = 6,
+    AWUM = 5,
+    NART = 4,
+    RFLM = 3,
+    TXFP = 2,
+    SLEEP = 1,
+    INRQ = 0,
+}
+
+CAN_CAN_MCR_Set :: bit_set[CAN_CAN_MCR_Flag; u32]
+
+CAN_CAN_MSR_Flag :: enum u32 {
+    RX = 11,
+    SAMP = 10,
+    RXM = 9,
+    TXM = 8,
+    SLAKI = 4,
+    WKUI = 3,
+    ERRI = 2,
+    SLAK = 1,
+    INAK = 0,
+}
+
+CAN_CAN_MSR_Set :: bit_set[CAN_CAN_MSR_Flag; u32]
+
+CAN_CAN_IER_Flag :: enum u32 {
+    SLKIE = 17,
+    WKUIE = 16,
+    ERRIE = 15,
+    LECIE = 11,
+    BOFIE = 10,
+    EPVIE = 9,
+    EWGIE = 8,
+    FOVIE1 = 6,
+    FFIE1 = 5,
+    FMPIE1 = 4,
+    FOVIE0 = 3,
+    FFIE0 = 2,
+    FMPIE0 = 1,
+    TMEIE = 0,
+}
+
+CAN_CAN_IER_Set :: bit_set[CAN_CAN_IER_Flag; u32]
+
+CAN_CAN_FM1R_Flag :: enum u32 {
+    FBM0 = 0,
+    FBM1 = 1,
+    FBM2 = 2,
+    FBM3 = 3,
+    FBM4 = 4,
+    FBM5 = 5,
+    FBM6 = 6,
+    FBM7 = 7,
+    FBM8 = 8,
+    FBM9 = 9,
+    FBM10 = 10,
+    FBM11 = 11,
+    FBM12 = 12,
+    FBM13 = 13,
+    FBM14 = 14,
+    FBM15 = 15,
+    FBM16 = 16,
+    FBM17 = 17,
+    FBM18 = 18,
+    FBM19 = 19,
+    FBM20 = 20,
+    FBM21 = 21,
+    FBM22 = 22,
+    FBM23 = 23,
+    FBM24 = 24,
+    FBM25 = 25,
+    FBM26 = 26,
+    FBM27 = 27,
+}
+
+CAN_CAN_FM1R_Set :: bit_set[CAN_CAN_FM1R_Flag; u32]
+
+CAN_CAN_FS1R_Flag :: enum u32 {
+    FSC0 = 0,
+    FSC1 = 1,
+    FSC2 = 2,
+    FSC3 = 3,
+    FSC4 = 4,
+    FSC5 = 5,
+    FSC6 = 6,
+    FSC7 = 7,
+    FSC8 = 8,
+    FSC9 = 9,
+    FSC10 = 10,
+    FSC11 = 11,
+    FSC12 = 12,
+    FSC13 = 13,
+    FSC14 = 14,
+    FSC15 = 15,
+    FSC16 = 16,
+    FSC17 = 17,
+    FSC18 = 18,
+    FSC19 = 19,
+    FSC20 = 20,
+    FSC21 = 21,
+    FSC22 = 22,
+    FSC23 = 23,
+    FSC24 = 24,
+    FSC25 = 25,
+    FSC26 = 26,
+    FSC27 = 27,
+}
+
+CAN_CAN_FS1R_Set :: bit_set[CAN_CAN_FS1R_Flag; u32]
+
+CAN_CAN_FFA1R_Flag :: enum u32 {
+    FFA0 = 0,
+    FFA1 = 1,
+    FFA2 = 2,
+    FFA3 = 3,
+    FFA4 = 4,
+    FFA5 = 5,
+    FFA6 = 6,
+    FFA7 = 7,
+    FFA8 = 8,
+    FFA9 = 9,
+    FFA10 = 10,
+    FFA11 = 11,
+    FFA12 = 12,
+    FFA13 = 13,
+    FFA14 = 14,
+    FFA15 = 15,
+    FFA16 = 16,
+    FFA17 = 17,
+    FFA18 = 18,
+    FFA19 = 19,
+    FFA20 = 20,
+    FFA21 = 21,
+    FFA22 = 22,
+    FFA23 = 23,
+    FFA24 = 24,
+    FFA25 = 25,
+    FFA26 = 26,
+    FFA27 = 27,
+}
+
+CAN_CAN_FFA1R_Set :: bit_set[CAN_CAN_FFA1R_Flag; u32]
+
+CAN_CAN_FA1R_Flag :: enum u32 {
+    FACT0 = 0,
+    FACT1 = 1,
+    FACT2 = 2,
+    FACT3 = 3,
+    FACT4 = 4,
+    FACT5 = 5,
+    FACT6 = 6,
+    FACT7 = 7,
+    FACT8 = 8,
+    FACT9 = 9,
+    FACT10 = 10,
+    FACT11 = 11,
+    FACT12 = 12,
+    FACT13 = 13,
+    FACT14 = 14,
+    FACT15 = 15,
+    FACT16 = 16,
+    FACT17 = 17,
+    FACT18 = 18,
+    FACT19 = 19,
+    FACT20 = 20,
+    FACT21 = 21,
+    FACT22 = 22,
+    FACT23 = 23,
+    FACT24 = 24,
+    FACT25 = 25,
+    FACT26 = 26,
+    FACT27 = 27,
+}
+
+CAN_CAN_FA1R_Set :: bit_set[CAN_CAN_FA1R_Flag; u32]
+
+CAN_F0R1_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F0R1_Set :: bit_set[CAN_F0R1_Flag; u32]
+
+CAN_F0R2_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F0R2_Set :: bit_set[CAN_F0R2_Flag; u32]
+
+CAN_F1R1_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F1R1_Set :: bit_set[CAN_F1R1_Flag; u32]
+
+CAN_F1R2_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F1R2_Set :: bit_set[CAN_F1R2_Flag; u32]
+
+CAN_F2R1_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F2R1_Set :: bit_set[CAN_F2R1_Flag; u32]
+
+CAN_F2R2_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F2R2_Set :: bit_set[CAN_F2R2_Flag; u32]
+
+CAN_F3R1_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F3R1_Set :: bit_set[CAN_F3R1_Flag; u32]
+
+CAN_F3R2_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F3R2_Set :: bit_set[CAN_F3R2_Flag; u32]
+
+CAN_F4R1_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F4R1_Set :: bit_set[CAN_F4R1_Flag; u32]
+
+CAN_F4R2_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F4R2_Set :: bit_set[CAN_F4R2_Flag; u32]
+
+CAN_F5R1_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F5R1_Set :: bit_set[CAN_F5R1_Flag; u32]
+
+CAN_F5R2_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F5R2_Set :: bit_set[CAN_F5R2_Flag; u32]
+
+CAN_F6R1_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F6R1_Set :: bit_set[CAN_F6R1_Flag; u32]
+
+CAN_F6R2_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F6R2_Set :: bit_set[CAN_F6R2_Flag; u32]
+
+CAN_F7R1_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F7R1_Set :: bit_set[CAN_F7R1_Flag; u32]
+
+CAN_F7R2_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F7R2_Set :: bit_set[CAN_F7R2_Flag; u32]
+
+CAN_F8R1_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F8R1_Set :: bit_set[CAN_F8R1_Flag; u32]
+
+CAN_F8R2_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F8R2_Set :: bit_set[CAN_F8R2_Flag; u32]
+
+CAN_F9R1_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F9R1_Set :: bit_set[CAN_F9R1_Flag; u32]
+
+CAN_F9R2_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F9R2_Set :: bit_set[CAN_F9R2_Flag; u32]
+
+CAN_F10R1_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F10R1_Set :: bit_set[CAN_F10R1_Flag; u32]
+
+CAN_F10R2_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F10R2_Set :: bit_set[CAN_F10R2_Flag; u32]
+
+CAN_F11R1_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F11R1_Set :: bit_set[CAN_F11R1_Flag; u32]
+
+CAN_F11R2_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F11R2_Set :: bit_set[CAN_F11R2_Flag; u32]
+
+CAN_F12R1_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F12R1_Set :: bit_set[CAN_F12R1_Flag; u32]
+
+CAN_F12R2_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F12R2_Set :: bit_set[CAN_F12R2_Flag; u32]
+
+CAN_F13R1_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F13R1_Set :: bit_set[CAN_F13R1_Flag; u32]
+
+CAN_F13R2_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F13R2_Set :: bit_set[CAN_F13R2_Flag; u32]
+
+CAN_F14R1_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F14R1_Set :: bit_set[CAN_F14R1_Flag; u32]
+
+CAN_F14R2_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F14R2_Set :: bit_set[CAN_F14R2_Flag; u32]
+
+CAN_F15R1_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F15R1_Set :: bit_set[CAN_F15R1_Flag; u32]
+
+CAN_F15R2_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F15R2_Set :: bit_set[CAN_F15R2_Flag; u32]
+
+CAN_F16R1_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F16R1_Set :: bit_set[CAN_F16R1_Flag; u32]
+
+CAN_F16R2_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F16R2_Set :: bit_set[CAN_F16R2_Flag; u32]
+
+CAN_F17R1_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F17R1_Set :: bit_set[CAN_F17R1_Flag; u32]
+
+CAN_F17R2_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F17R2_Set :: bit_set[CAN_F17R2_Flag; u32]
+
+CAN_F18R1_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F18R1_Set :: bit_set[CAN_F18R1_Flag; u32]
+
+CAN_F18R2_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F18R2_Set :: bit_set[CAN_F18R2_Flag; u32]
+
+CAN_F19R1_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F19R1_Set :: bit_set[CAN_F19R1_Flag; u32]
+
+CAN_F19R2_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F19R2_Set :: bit_set[CAN_F19R2_Flag; u32]
+
+CAN_F20R1_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F20R1_Set :: bit_set[CAN_F20R1_Flag; u32]
+
+CAN_F20R2_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F20R2_Set :: bit_set[CAN_F20R2_Flag; u32]
+
+CAN_F21R1_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F21R1_Set :: bit_set[CAN_F21R1_Flag; u32]
+
+CAN_F21R2_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F21R2_Set :: bit_set[CAN_F21R2_Flag; u32]
+
+CAN_F22R1_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F22R1_Set :: bit_set[CAN_F22R1_Flag; u32]
+
+CAN_F22R2_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F22R2_Set :: bit_set[CAN_F22R2_Flag; u32]
+
+CAN_F23R1_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F23R1_Set :: bit_set[CAN_F23R1_Flag; u32]
+
+CAN_F23R2_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F23R2_Set :: bit_set[CAN_F23R2_Flag; u32]
+
+CAN_F24R1_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F24R1_Set :: bit_set[CAN_F24R1_Flag; u32]
+
+CAN_F24R2_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F24R2_Set :: bit_set[CAN_F24R2_Flag; u32]
+
+CAN_F25R1_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F25R1_Set :: bit_set[CAN_F25R1_Flag; u32]
+
+CAN_F25R2_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F25R2_Set :: bit_set[CAN_F25R2_Flag; u32]
+
+CAN_F26R1_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F26R1_Set :: bit_set[CAN_F26R1_Flag; u32]
+
+CAN_F26R2_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F26R2_Set :: bit_set[CAN_F26R2_Flag; u32]
+
+CAN_F27R1_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F27R1_Set :: bit_set[CAN_F27R1_Flag; u32]
+
+CAN_F27R2_Flag :: enum u32 {
+    FB0 = 0,
+    FB1 = 1,
+    FB2 = 2,
+    FB3 = 3,
+    FB4 = 4,
+    FB5 = 5,
+    FB6 = 6,
+    FB7 = 7,
+    FB8 = 8,
+    FB9 = 9,
+    FB10 = 10,
+    FB11 = 11,
+    FB12 = 12,
+    FB13 = 13,
+    FB14 = 14,
+    FB15 = 15,
+    FB16 = 16,
+    FB17 = 17,
+    FB18 = 18,
+    FB19 = 19,
+    FB20 = 20,
+    FB21 = 21,
+    FB22 = 22,
+    FB23 = 23,
+    FB24 = 24,
+    FB25 = 25,
+    FB26 = 26,
+    FB27 = 27,
+    FB28 = 28,
+    FB29 = 29,
+    FB30 = 30,
+    FB31 = 31,
+}
+
+CAN_F27R2_Set :: bit_set[CAN_F27R2_Flag; u32]
+
 CAN_Reg :: struct {
-    CAN_MCR: u32,  // 0x00 RW — CAN_MCR
-    CAN_MSR: u32,  // 0x04 RW — CAN_MSR
+    CAN_MCR: CAN_CAN_MCR_Set,  // 0x00 RW — CAN_MCR
+    CAN_MSR: CAN_CAN_MSR_Set,  // 0x04 RW — CAN_MSR
     CAN_TSR: u32,  // 0x08 RW — CAN_TSR
     CAN_RF0R: u32,  // 0x0C RW — CAN_RF0R
     CAN_RF1R: u32,  // 0x10 RW — CAN_RF1R
-    CAN_IER: u32,  // 0x14 RW — CAN_IER
+    CAN_IER: CAN_CAN_IER_Set,  // 0x14 RW — CAN_IER
     CAN_ESR: u32,  // 0x18 RW — CAN_ESR
     CAN_BTR: u32,  // 0x1C RW — CAN BTR
     _reserved_0180: [352]u8,  // padding
@@ -6890,71 +10268,73 @@ CAN_Reg :: struct {
     CAN_RDH1R: u32,  // 0x1CC RO — CAN_RDH1R
     _reserved_0200: [48]u8,  // padding
     CAN_FMR: u32,  // 0x200 RW — CAN_FMR
-    CAN_FM1R: u32,  // 0x204 RW — CAN_FM1R
+    CAN_FM1R: CAN_CAN_FM1R_Set,  // 0x204 RW — CAN_FM1R
     _reserved_020C: [4]u8,  // padding
-    CAN_FS1R: u32,  // 0x20C RW — CAN_FS1R
+    CAN_FS1R: CAN_CAN_FS1R_Set,  // 0x20C RW — CAN_FS1R
     _reserved_0214: [4]u8,  // padding
-    CAN_FFA1R: u32,  // 0x214 RW — CAN_FFA1R
+    CAN_FFA1R: CAN_CAN_FFA1R_Set,  // 0x214 RW — CAN_FFA1R
     _reserved_021C: [4]u8,  // padding
-    CAN_FA1R: u32,  // 0x21C RW — CAN_FA1R
+    CAN_FA1R: CAN_CAN_FA1R_Set,  // 0x21C RW — CAN_FA1R
     _reserved_0240: [32]u8,  // padding
-    F0R1: u32,  // 0x240 RW — Filter bank 0 register 1
-    F0R2: u32,  // 0x244 RW — Filter bank 0 register 2
-    F1R1: u32,  // 0x248 RW — Filter bank 1 register 1
-    F1R2: u32,  // 0x24C RW — Filter bank 1 register 2
-    F2R1: u32,  // 0x250 RW — Filter bank 2 register 1
-    F2R2: u32,  // 0x254 RW — Filter bank 2 register 2
-    F3R1: u32,  // 0x258 RW — Filter bank 3 register 1
-    F3R2: u32,  // 0x25C RW — Filter bank 3 register 2
-    F4R1: u32,  // 0x260 RW — Filter bank 4 register 1
-    F4R2: u32,  // 0x264 RW — Filter bank 4 register 2
-    F5R1: u32,  // 0x268 RW — Filter bank 5 register 1
-    F5R2: u32,  // 0x26C RW — Filter bank 5 register 2
-    F6R1: u32,  // 0x270 RW — Filter bank 6 register 1
-    F6R2: u32,  // 0x274 RW — Filter bank 6 register 2
-    F7R1: u32,  // 0x278 RW — Filter bank 7 register 1
-    F7R2: u32,  // 0x27C RW — Filter bank 7 register 2
-    F8R1: u32,  // 0x280 RW — Filter bank 8 register 1
-    F8R2: u32,  // 0x284 RW — Filter bank 8 register 2
-    F9R1: u32,  // 0x288 RW — Filter bank 9 register 1
-    F9R2: u32,  // 0x28C RW — Filter bank 9 register 2
-    F10R1: u32,  // 0x290 RW — Filter bank 10 register 1
-    F10R2: u32,  // 0x294 RW — Filter bank 10 register 2
-    F11R1: u32,  // 0x298 RW — Filter bank 11 register 1
-    F11R2: u32,  // 0x29C RW — Filter bank 11 register 2
-    F12R1: u32,  // 0x2A0 RW — Filter bank 4 register 1
-    F12R2: u32,  // 0x2A4 RW — Filter bank 12 register 2
-    F13R1: u32,  // 0x2A8 RW — Filter bank 13 register 1
-    F13R2: u32,  // 0x2AC RW — Filter bank 13 register 2
-    F14R1: u32,  // 0x2B0 RW — Filter bank 14 register 1
-    F14R2: u32,  // 0x2B4 RW — Filter bank 14 register 2
-    F15R1: u32,  // 0x2B8 RW — Filter bank 15 register 1
-    F15R2: u32,  // 0x2BC RW — Filter bank 15 register 2
-    F16R1: u32,  // 0x2C0 RW — Filter bank 16 register 1
-    F16R2: u32,  // 0x2C4 RW — Filter bank 16 register 2
-    F17R1: u32,  // 0x2C8 RW — Filter bank 17 register 1
-    F17R2: u32,  // 0x2CC RW — Filter bank 17 register 2
-    F18R1: u32,  // 0x2D0 RW — Filter bank 18 register 1
-    F18R2: u32,  // 0x2D4 RW — Filter bank 18 register 2
-    F19R1: u32,  // 0x2D8 RW — Filter bank 19 register 1
-    F19R2: u32,  // 0x2DC RW — Filter bank 19 register 2
-    F20R1: u32,  // 0x2E0 RW — Filter bank 20 register 1
-    F20R2: u32,  // 0x2E4 RW — Filter bank 20 register 2
-    F21R1: u32,  // 0x2E8 RW — Filter bank 21 register 1
-    F21R2: u32,  // 0x2EC RW — Filter bank 21 register 2
-    F22R1: u32,  // 0x2F0 RW — Filter bank 22 register 1
-    F22R2: u32,  // 0x2F4 RW — Filter bank 22 register 2
-    F23R1: u32,  // 0x2F8 RW — Filter bank 23 register 1
-    F23R2: u32,  // 0x2FC RW — Filter bank 23 register 2
-    F24R1: u32,  // 0x300 RW — Filter bank 24 register 1
-    F24R2: u32,  // 0x304 RW — Filter bank 24 register 2
-    F25R1: u32,  // 0x308 RW — Filter bank 25 register 1
-    F25R2: u32,  // 0x30C RW — Filter bank 25 register 2
-    F26R1: u32,  // 0x310 RW — Filter bank 26 register 1
-    F26R2: u32,  // 0x314 RW — Filter bank 26 register 2
-    F27R1: u32,  // 0x318 RW — Filter bank 27 register 1
-    F27R2: u32,  // 0x31C RW — Filter bank 27 register 2
+    F0R1: CAN_F0R1_Set,  // 0x240 RW — Filter bank 0 register 1
+    F0R2: CAN_F0R2_Set,  // 0x244 RW — Filter bank 0 register 2
+    F1R1: CAN_F1R1_Set,  // 0x248 RW — Filter bank 1 register 1
+    F1R2: CAN_F1R2_Set,  // 0x24C RW — Filter bank 1 register 2
+    F2R1: CAN_F2R1_Set,  // 0x250 RW — Filter bank 2 register 1
+    F2R2: CAN_F2R2_Set,  // 0x254 RW — Filter bank 2 register 2
+    F3R1: CAN_F3R1_Set,  // 0x258 RW — Filter bank 3 register 1
+    F3R2: CAN_F3R2_Set,  // 0x25C RW — Filter bank 3 register 2
+    F4R1: CAN_F4R1_Set,  // 0x260 RW — Filter bank 4 register 1
+    F4R2: CAN_F4R2_Set,  // 0x264 RW — Filter bank 4 register 2
+    F5R1: CAN_F5R1_Set,  // 0x268 RW — Filter bank 5 register 1
+    F5R2: CAN_F5R2_Set,  // 0x26C RW — Filter bank 5 register 2
+    F6R1: CAN_F6R1_Set,  // 0x270 RW — Filter bank 6 register 1
+    F6R2: CAN_F6R2_Set,  // 0x274 RW — Filter bank 6 register 2
+    F7R1: CAN_F7R1_Set,  // 0x278 RW — Filter bank 7 register 1
+    F7R2: CAN_F7R2_Set,  // 0x27C RW — Filter bank 7 register 2
+    F8R1: CAN_F8R1_Set,  // 0x280 RW — Filter bank 8 register 1
+    F8R2: CAN_F8R2_Set,  // 0x284 RW — Filter bank 8 register 2
+    F9R1: CAN_F9R1_Set,  // 0x288 RW — Filter bank 9 register 1
+    F9R2: CAN_F9R2_Set,  // 0x28C RW — Filter bank 9 register 2
+    F10R1: CAN_F10R1_Set,  // 0x290 RW — Filter bank 10 register 1
+    F10R2: CAN_F10R2_Set,  // 0x294 RW — Filter bank 10 register 2
+    F11R1: CAN_F11R1_Set,  // 0x298 RW — Filter bank 11 register 1
+    F11R2: CAN_F11R2_Set,  // 0x29C RW — Filter bank 11 register 2
+    F12R1: CAN_F12R1_Set,  // 0x2A0 RW — Filter bank 4 register 1
+    F12R2: CAN_F12R2_Set,  // 0x2A4 RW — Filter bank 12 register 2
+    F13R1: CAN_F13R1_Set,  // 0x2A8 RW — Filter bank 13 register 1
+    F13R2: CAN_F13R2_Set,  // 0x2AC RW — Filter bank 13 register 2
+    F14R1: CAN_F14R1_Set,  // 0x2B0 RW — Filter bank 14 register 1
+    F14R2: CAN_F14R2_Set,  // 0x2B4 RW — Filter bank 14 register 2
+    F15R1: CAN_F15R1_Set,  // 0x2B8 RW — Filter bank 15 register 1
+    F15R2: CAN_F15R2_Set,  // 0x2BC RW — Filter bank 15 register 2
+    F16R1: CAN_F16R1_Set,  // 0x2C0 RW — Filter bank 16 register 1
+    F16R2: CAN_F16R2_Set,  // 0x2C4 RW — Filter bank 16 register 2
+    F17R1: CAN_F17R1_Set,  // 0x2C8 RW — Filter bank 17 register 1
+    F17R2: CAN_F17R2_Set,  // 0x2CC RW — Filter bank 17 register 2
+    F18R1: CAN_F18R1_Set,  // 0x2D0 RW — Filter bank 18 register 1
+    F18R2: CAN_F18R2_Set,  // 0x2D4 RW — Filter bank 18 register 2
+    F19R1: CAN_F19R1_Set,  // 0x2D8 RW — Filter bank 19 register 1
+    F19R2: CAN_F19R2_Set,  // 0x2DC RW — Filter bank 19 register 2
+    F20R1: CAN_F20R1_Set,  // 0x2E0 RW — Filter bank 20 register 1
+    F20R2: CAN_F20R2_Set,  // 0x2E4 RW — Filter bank 20 register 2
+    F21R1: CAN_F21R1_Set,  // 0x2E8 RW — Filter bank 21 register 1
+    F21R2: CAN_F21R2_Set,  // 0x2EC RW — Filter bank 21 register 2
+    F22R1: CAN_F22R1_Set,  // 0x2F0 RW — Filter bank 22 register 1
+    F22R2: CAN_F22R2_Set,  // 0x2F4 RW — Filter bank 22 register 2
+    F23R1: CAN_F23R1_Set,  // 0x2F8 RW — Filter bank 23 register 1
+    F23R2: CAN_F23R2_Set,  // 0x2FC RW — Filter bank 23 register 2
+    F24R1: CAN_F24R1_Set,  // 0x300 RW — Filter bank 24 register 1
+    F24R2: CAN_F24R2_Set,  // 0x304 RW — Filter bank 24 register 2
+    F25R1: CAN_F25R1_Set,  // 0x308 RW — Filter bank 25 register 1
+    F25R2: CAN_F25R2_Set,  // 0x30C RW — Filter bank 25 register 2
+    F26R1: CAN_F26R1_Set,  // 0x310 RW — Filter bank 26 register 1
+    F26R2: CAN_F26R2_Set,  // 0x314 RW — Filter bank 26 register 2
+    F27R1: CAN_F27R1_Set,  // 0x318 RW — Filter bank 27 register 1
+    F27R2: CAN_F27R2_Set,  // 0x31C RW — Filter bank 27 register 2
 }
+
+#assert(size_of(CAN_Reg) == 800)
 
 can := (^CAN_Reg)(rawptr(uintptr(CAN_BASE)))
 
@@ -15125,25 +18505,33 @@ CAN_F27R2_FB31_BIT :: 1 << 31
 
 DAC_BASE :: 0x40007400
 
+DAC_SWTRIGR_Flag :: enum u32 {
+    SWTRIG1 = 0,
+    SWTRIG2 = 1,
+}
+
+DAC_SWTRIGR_Set :: bit_set[DAC_SWTRIGR_Flag; u32]
+
+DAC_SR_Flag :: enum u32 {
+    DMAUDR2 = 29,
+    DMAUDR1 = 13,
+}
+
+DAC_SR_Set :: bit_set[DAC_SR_Flag; u32]
+
 DAC_Reg :: struct {
     CR: u32,  // 0x00 RW — control register
-    SWTRIGR: u32,  // 0x04 WO — software trigger register
+    SWTRIGR: DAC_SWTRIGR_Set,  // 0x04 WO — software trigger register
     DHR12R1: u32,  // 0x08 RW — channel1 12-bit right-aligned data holding register
     DHR12L1: u32,  // 0x0C RW — channel1 12-bit left aligned data holding register
     DHR8R1: u32,  // 0x10 RW — channel1 8-bit right aligned data holding register
     _reserved_002C: [24]u8,  // padding
     DOR1: u32,  // 0x2C RO — channel1 data output register
     _reserved_0034: [4]u8,  // padding
-    SR: u32,  // 0x34 RW — status register
-    DHR12R2: u32,  // 0x14 RW — DAC channel2 12-bit right-aligned data holding register
-    DHR12L2: u32,  // 0x18 RW — DAC channel2 12-bit left-aligned data holding register
-    DHR8R2: u32,  // 0x1C RW — DAC channel2 8-bit right-aligned data holding register
-    DHR12RD: u32,  // 0x20 RW — DHR12RD
-    DHR12LD: u32,  // 0x24 RW — Dual DAC 12-bit left-aligned data holding register
-    DHR8RD: u32,  // 0x28 RW — Dual DAC 8-bit right-aligned data holding register
-    _reserved_0030: [4]u8,  // padding
-    DOR2: u32,  // 0x30 RO — DAC channel2 data output register
+    SR: DAC_SR_Set,  // 0x34 RW — status register
 }
+
+#assert(size_of(DAC_Reg) == 56)
 
 dac := (^DAC_Reg)(rawptr(uintptr(DAC_BASE)))
 
@@ -15267,17 +18655,34 @@ DAC_DOR2_DACC2DOR_MSK :: 0xFFF
 
 SCB_BASE :: 0xE000ED00
 
+SCB_SCR_Flag :: enum u32 {
+    SLEEPONEXIT = 1,
+    SLEEPDEEP = 2,
+    SEVEONPEND = 4,
+}
+
+SCB_SCR_Set :: bit_set[SCB_SCR_Flag; u32]
+
+SCB_CCR_Flag :: enum u32 {
+    UNALIGN__TRP = 3,
+    STKALIGN = 9,
+}
+
+SCB_CCR_Set :: bit_set[SCB_CCR_Flag; u32]
+
 SCB_Reg :: struct {
     CPUID: u32,  // 0x00 RO — CPUID base register
     ICSR: u32,  // 0x04 RW — Interrupt control and state register
     _reserved_000C: [4]u8,  // padding
     AIRCR: u32,  // 0x0C RW — Application interrupt and reset control register
-    SCR: u32,  // 0x10 RW — System control register
-    CCR: u32,  // 0x14 RW — Configuration and control register
+    SCR: SCB_SCR_Set,  // 0x10 RW — System control register
+    CCR: SCB_CCR_Set,  // 0x14 RW — Configuration and control register
     _reserved_001C: [4]u8,  // padding
     SHPR2: u32,  // 0x1C RW — System handler priority registers
     SHPR3: u32,  // 0x20 RW — System handler priority registers
 }
+
+#assert(size_of(SCB_Reg) == 36)
 
 scb := (^SCB_Reg)(rawptr(uintptr(SCB_BASE)))
 
@@ -15374,12 +18779,23 @@ SCB_SHPR3_PRI_15_MSK :: 0xFF000000
 
 STK_BASE :: 0xE000E010
 
+STK_CSR_Flag :: enum u32 {
+    ENABLE = 0,
+    TICKINT = 1,
+    CLKSOURCE = 2,
+    COUNTFLAG = 16,
+}
+
+STK_CSR_Set :: bit_set[STK_CSR_Flag; u32]
+
 STK_Reg :: struct {
-    CSR: u32,  // 0x00 RW — SysTick control and status register
+    CSR: STK_CSR_Set,  // 0x00 RW — SysTick control and status register
     RVR: u32,  // 0x04 RW — SysTick reload value register
     CVR: u32,  // 0x08 RW — SysTick current value register
     CALIB: u32,  // 0x0C RW — SysTick calibration value register
 }
+
+#assert(size_of(STK_Reg) == 16)
 
 stk := (^STK_Reg)(rawptr(uintptr(STK_BASE)))
 

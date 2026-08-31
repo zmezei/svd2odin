@@ -78,8 +78,10 @@ reset_handler:
 copy_data:
     cmp r1, r2
     bcs copy_data_done
-    ldr r3, [r0], #4
-    str r3, [r1], #4
+    ldr r3, [r0]
+    adds r0, r0, #4
+    str r3, [r1]
+    adds r1, r1, #4
     b copy_data
 copy_data_done:
 
@@ -90,12 +92,14 @@ copy_data_done:
 zero_bss:
     cmp r1, r2
     bcs zero_bss_done
-    str r3, [r1], #4
+    str r3, [r1]
+    adds r1, r1, #4
     b zero_bss
 zero_bss_done:
 
-    /* Call main */
-    bl main
+    /* Call entry point (use blx to handle Thumb transition) */
+    ldr r0, =entry
+    blx r0
 
     /* If main returns, loop forever */
 hang:
