@@ -230,13 +230,29 @@ The HAL uses `intrinsics.volatile_load` and `intrinsics.volatile_store` for all 
 
 ## Supported chips
 
-| Chip | SVD | HAL | Startup | Linker | Status |
-|------|-----|-----|---------|--------|--------|
-| STM32F051x8 | Yes | stm32f0 | Yes | Yes | Tested |
-| STM32F030 | Yes | stm32f0 | — | — | HAL compatible, needs linker |
-| STM32F103 | Yes | — | — | — | Needs HAL + startup |
+Chips are classified by verification level:
+
+| Tier | Meaning |
+|------|---------|
+| **Maintainer-tested** | Flashed and verified on physical hardware by the maintainer |
+| **Community-tested** | Flashed and verified by a PR contributor on their hardware |
+| **Generated, untested** | Bindings generated from SVD but never flashed to silicon |
+
+| Chip | SVD | HAL | Startup | Linker | Tier |
+|------|-----|-----|---------|--------|------|
+| STM32F051x8 | Yes | stm32f0 | Yes | Yes | Maintainer-tested |
+| STM32F030 | Yes | stm32f0 | — | — | Generated, untested |
+| STM32F103 | Yes | — | — | — | Generated, untested |
 
 Adding support for a new family (F1, F4, G0, etc.) requires writing a new HAL directory and startup/linker files. The generator works with any CMSIS-SVD file.
+
+### Contributing new chip support
+
+When submitting a PR for a chip the maintainer does not own:
+
+1. Include a runnable example (e.g., `examples/blinky`)
+2. Paste a flash log or serial output in the PR description
+3. The chip will be marked **Community-tested** in the table above
 
 ## License
 
