@@ -443,7 +443,7 @@ def main():
 
     out_path = Path(args.output)
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(odin_code)
+    out_path.write_text(odin_code, encoding="utf-8")
     print(f"  Written: {out_path} ({len(odin_code)} bytes)")
 
     print("Done.")
